@@ -1,0 +1,142 @@
+{
+  "app": {
+    "name": "J Order",
+    "tagline": "Gas delivered to your door"
+  },
+  "nav": {
+    "home": "Home",
+    "orders": "My Orders",
+    "newOrder": "New Order",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "signOut": "Sign Out"
+  },
+  "auth": {
+    "title": "Welcome to J Order",
+    "subtitle": "Enter your phone number to continue",
+    "phonePlaceholder": "Phone number",
+    "sendOtp": "Send Code",
+    "otpTitle": "Enter Verification Code",
+    "otpSubtitle": "We sent a 6 digit code to",
+    "otpPlaceholder": "6 digit code",
+    "verify": "Verify",
+    "resend": "Resend Code",
+    "continueAsGuest": "Continue as Guest",
+    "haveAccount": "Already have an account?",
+    "noAccount": "New here?",
+    "signIn": "Sign In",
+    "signUp": "Create Account",
+    "name": "Full Name",
+    "namePlaceholder": "Your full name"
+  },
+  "language": {
+    "select": "Choose Your Language",
+    "subtitle": "Select the language you prefer"
+  },
+  "order": {
+    "new": "New Order",
+    "step1": "Choose Product",
+    "step2": "Quantity",
+    "step3": "Delivery Location",
+    "step4": "Date and Time",
+    "step5": "Review and Confirm",
+    "product": "Product",
+    "quantity": "Quantity",
+    "location": "Delivery Location",
+    "locationRequired": "Delivery location is required",
+    "locationHint": "Enter your full address or use the map pin",
+    "useMapPin": "Use Map Pin",
+    "date": "Preferred Delivery Date",
+    "time": "Preferred Delivery Time",
+    "notes": "Additional Notes",
+    "notesPlaceholder": "Any special instructions...",
+    "confirm": "Place Order",
+    "back": "Back",
+    "next": "Next",
+    "queued": "Order saved. Will send when you reconnect.",
+    "success": "Order Placed",
+    "successMessage": "Your order has been received. We will confirm shortly.",
+    "orderNumber": "Order Number",
+    "trackOrder": "Track Order",
+    "reorder": "Reorder",
+    "cancel": "Cancel Order",
+    "cancelReason": "Reason for cancellation",
+    "cancelConfirm": "Yes, Cancel Order"
+  },
+  "products": {
+    "GAS_REFILL": "Gas Refill",
+    "CYLINDER_6KG": "6 Kg Cylinder",
+    "CYLINDER_12KG": "12 Kg Cylinder",
+    "CYLINDER_20KG": "20 Kg Cylinder",
+    "CYLINDER_38KG": "38 Kg Cylinder",
+    "GAS_REFILL_DESC": "Refill your existing LPG cylinder",
+    "CYLINDER_6KG_DESC": "New 6 kg gas cylinder",
+    "CYLINDER_12KG_DESC": "New 12 kg gas cylinder",
+    "CYLINDER_20KG_DESC": "New 20 kg gas cylinder",
+    "CYLINDER_38KG_DESC": "New 38 kg gas cylinder"
+  },
+  "status": {
+    "PENDING": "Pending",
+    "CONFIRMED": "Confirmed",
+    "PROCESSING": "Processing",
+    "OUT_FOR_DELIVERY": "Out for Delivery",
+    "DELIVERED": "Delivered",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled"
+  },
+  "tracking": {
+    "title": "Track Order",
+    "orderPlaced": "Order Placed",
+    "confirmed": "Confirmed",
+    "processing": "Processing",
+    "outForDelivery": "Out for Delivery",
+    "delivered": "Delivered"
+  },
+  "staff": {
+    "dashboard": "Staff Dashboard",
+    "incomingOrders": "Incoming Orders",
+    "filterByStatus": "Filter by Status",
+    "filterByProduct": "Filter by Product",
+    "filterByDate": "Filter by Date",
+    "updateStatus": "Update Status",
+    "assignTo": "Assign To",
+    "noOrders": "No orders at this time"
+  },
+  "admin": {
+    "dashboard": "Admin Dashboard",
+    "totalOrders": "Total Orders",
+    "completionRate": "Completion Rate",
+    "ordersToday": "Orders Today",
+    "topProducts": "Top Products",
+    "staffAccounts": "Staff Accounts",
+    "addStaff": "Add Staff",
+    "editStaff": "Edit Staff",
+    "deactivate": "Deactivate",
+    "activate": "Activate"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "No connection. Your order is saved and will sync automatically.",
+    "notFound": "Not found",
+    "unauthorized": "You are not authorized to view this page",
+    "validation": "Please check your inputs and try again",
+    "otpExpired": "Code expired. Please request a new one.",
+    "otpInvalid": "Invalid code. Please try again."
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "search": "Search",
+    "noResults": "No results found",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "all": "All",
+    "by": "by",
+    "at": "at"
+  }
+}

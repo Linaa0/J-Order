@@ -1,0 +1,142 @@
+{
+  "app": {
+    "name": "J Order",
+    "tagline": "Gaze itangwa ku rugi rwawe"
+  },
+  "nav": {
+    "home": "Ahabanza",
+    "orders": "Amaporoso Yanjye",
+    "newOrder": "Gutura Iporoso",
+    "dashboard": "Ubukanama",
+    "settings": "Igenamiterere",
+    "signOut": "Sohoka"
+  },
+  "auth": {
+    "title": "Murakaza neza kuri J Order",
+    "subtitle": "Injiza nimero ya telefoni yawe",
+    "phonePlaceholder": "Nimero ya telefoni",
+    "sendOtp": "Ohereza Kode",
+    "otpTitle": "Injiza Kode yo Kwemeza",
+    "otpSubtitle": "Twakohererejwe kode y'imibare 6 kuri",
+    "otpPlaceholder": "Kode y'imibare 6",
+    "verify": "Emeza",
+    "resend": "Ohereza Kode Nshya",
+    "continueAsGuest": "Komeza Nk'Umushyitsi",
+    "haveAccount": "Usanzwe ufite konti?",
+    "noAccount": "Umunyishyura mushya?",
+    "signIn": "Injira",
+    "signUp": "Fungura Konti",
+    "name": "Amazina Yuzuye",
+    "namePlaceholder": "Amazina yawe"
+  },
+  "language": {
+    "select": "Hitamo Ururimi Rwawe",
+    "subtitle": "Hitamo ururimi ukunda"
+  },
+  "order": {
+    "new": "Iporoso Rishya",
+    "step1": "Hitamo Igicuruzwa",
+    "step2": "Umubare",
+    "step3": "Aho Kuzana",
+    "step4": "Italiki n'Amasaha",
+    "step5": "Reba no Kwemeza",
+    "product": "Igicuruzwa",
+    "quantity": "Umubare",
+    "location": "Aho Kuzanirwa",
+    "locationRequired": "Aho kuzanirwa birakenewe",
+    "locationHint": "Injiza aderesi yawe yuzuye",
+    "useMapPin": "Koresha Imappini",
+    "date": "Italiki yo Kuziganwa",
+    "time": "Amasaha yo Kuziganwa",
+    "notes": "Inyandiko Yongeyeho",
+    "notesPlaceholder": "Amabwiriza yihariye...",
+    "confirm": "Shyira Iporoso",
+    "back": "Subira Inyuma",
+    "next": "Komeza",
+    "queued": "Iporoso ribitswe. Rizohererezwa iyo usubiye gutumanaho.",
+    "success": "Iporoso Ryakiriwe",
+    "successMessage": "Iporoso ryawe ryakiriwe. Tuzarwemeza vuba.",
+    "orderNumber": "Nimero y'Iporoso",
+    "trackOrder": "Kurikirana Iporoso",
+    "reorder": "Ongera Gutuma",
+    "cancel": "Siba Iporoso",
+    "cancelReason": "Impamvu yo Gusiba",
+    "cancelConfirm": "Yego, Siba Iporoso"
+  },
+  "products": {
+    "GAS_REFILL": "Kongera Gaze",
+    "CYLINDER_6KG": "Silindiro ya 6 Kg",
+    "CYLINDER_12KG": "Silindiro ya 12 Kg",
+    "CYLINDER_20KG": "Silindiro ya 20 Kg",
+    "CYLINDER_38KG": "Silindiro ya 38 Kg",
+    "GAS_REFILL_DESC": "Ongera gaze mu silindiro yawe",
+    "CYLINDER_6KG_DESC": "Silindiro nshya ya 6 kg",
+    "CYLINDER_12KG_DESC": "Silindiro nshya ya 12 kg",
+    "CYLINDER_20KG_DESC": "Silindiro nshya ya 20 kg",
+    "CYLINDER_38KG_DESC": "Silindiro nshya ya 38 kg"
+  },
+  "status": {
+    "PENDING": "Birategerejwe",
+    "CONFIRMED": "Byemejwe",
+    "PROCESSING": "Biratunganyirizwa",
+    "OUT_FOR_DELIVERY": "Biraza",
+    "DELIVERED": "Byatanzwe",
+    "COMPLETED": "Byarangiye",
+    "CANCELLED": "Birasiwe"
+  },
+  "tracking": {
+    "title": "Kurikirana Iporoso",
+    "orderPlaced": "Iporoso Ryatanzwe",
+    "confirmed": "Ryemejwe",
+    "processing": "Ritunganyirizwa",
+    "outForDelivery": "Riri mu Nzira",
+    "delivered": "Ryatanzwe"
+  },
+  "staff": {
+    "dashboard": "Ubukanama bw'Akazi",
+    "incomingOrders": "Amaporoso Ashya",
+    "filterByStatus": "Shungura na Sitati",
+    "filterByProduct": "Shungura n'Igicuruzwa",
+    "filterByDate": "Shungura n'Italiki",
+    "updateStatus": "Hindura Sitati",
+    "assignTo": "Ha Umuntu",
+    "noOrders": "Nta maporoso aho ubu"
+  },
+  "admin": {
+    "dashboard": "Ubukanama bw'Ubuyobozi",
+    "totalOrders": "Amaporoso Yose",
+    "completionRate": "Igipimo cy'Ibyarangiye",
+    "ordersToday": "Amaporoso Uyu Munsi",
+    "topProducts": "Ibicuruzwa Biruta Ibindi",
+    "staffAccounts": "Konti z'Akazi",
+    "addStaff": "Ongeraho Umukozi",
+    "editStaff": "Hindura Umukozi",
+    "deactivate": "Hagarika",
+    "activate": "Kongeza"
+  },
+  "errors": {
+    "generic": "Habaye ikibazo. Ongera ugerageze.",
+    "network": "Nta gutumanaho. Iporoso ryawe ribitswe kandi rizohererezwa.",
+    "notFound": "Ntibiboneka",
+    "unauthorized": "Ntamfite uburenganzira bwo kureba uru rupapuro",
+    "validation": "Reba ibyo wanditse hanyuma ugerageze",
+    "otpExpired": "Kode irangiye. Saba nshya.",
+    "otpInvalid": "Kode ntabwo ari yo. Ongera ugerageze."
+  },
+  "common": {
+    "loading": "Birategerezwa...",
+    "save": "Bika",
+    "cancel": "Hagarika",
+    "delete": "Siba",
+    "edit": "Hindura",
+    "view": "Reba",
+    "close": "Funga",
+    "search": "Shakisha",
+    "noResults": "Nta bisubizo biboneka",
+    "today": "Uyu Munsi",
+    "yesterday": "Ejo Hashize",
+    "all": "Byose",
+    "by": "na",
+    "at": "saa"
+  }
+}

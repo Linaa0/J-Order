@@ -1,0 +1,142 @@
+{
+  "app": {
+    "name": "J Order",
+    "tagline": "Le gaz livré à votre porte"
+  },
+  "nav": {
+    "home": "Accueil",
+    "orders": "Mes Commandes",
+    "newOrder": "Nouvelle Commande",
+    "dashboard": "Tableau de Bord",
+    "settings": "Paramètres",
+    "signOut": "Se Déconnecter"
+  },
+  "auth": {
+    "title": "Bienvenue sur J Order",
+    "subtitle": "Entrez votre numéro de téléphone pour continuer",
+    "phonePlaceholder": "Numéro de téléphone",
+    "sendOtp": "Envoyer le Code",
+    "otpTitle": "Entrez le Code de Vérification",
+    "otpSubtitle": "Nous avons envoyé un code à 6 chiffres au",
+    "otpPlaceholder": "Code à 6 chiffres",
+    "verify": "Vérifier",
+    "resend": "Renvoyer le Code",
+    "continueAsGuest": "Continuer en tant qu'Invité",
+    "haveAccount": "Vous avez déjà un compte?",
+    "noAccount": "Nouveau ici?",
+    "signIn": "Se Connecter",
+    "signUp": "Créer un Compte",
+    "name": "Nom Complet",
+    "namePlaceholder": "Votre nom complet"
+  },
+  "language": {
+    "select": "Choisissez Votre Langue",
+    "subtitle": "Sélectionnez la langue que vous préférez"
+  },
+  "order": {
+    "new": "Nouvelle Commande",
+    "step1": "Choisir un Produit",
+    "step2": "Quantité",
+    "step3": "Lieu de Livraison",
+    "step4": "Date et Heure",
+    "step5": "Vérifier et Confirmer",
+    "product": "Produit",
+    "quantity": "Quantité",
+    "location": "Lieu de Livraison",
+    "locationRequired": "Le lieu de livraison est requis",
+    "locationHint": "Entrez votre adresse complète ou utilisez l'épingle sur la carte",
+    "useMapPin": "Utiliser l'Épingle",
+    "date": "Date de Livraison Préférée",
+    "time": "Heure de Livraison Préférée",
+    "notes": "Notes Supplémentaires",
+    "notesPlaceholder": "Instructions spéciales...",
+    "confirm": "Passer la Commande",
+    "back": "Retour",
+    "next": "Suivant",
+    "queued": "Commande sauvegardée. Elle sera envoyée dès que vous serez reconnecté.",
+    "success": "Commande Passée",
+    "successMessage": "Votre commande a été reçue. Nous confirmerons bientôt.",
+    "orderNumber": "Numéro de Commande",
+    "trackOrder": "Suivre la Commande",
+    "reorder": "Recommander",
+    "cancel": "Annuler la Commande",
+    "cancelReason": "Raison de l'annulation",
+    "cancelConfirm": "Oui, Annuler la Commande"
+  },
+  "products": {
+    "GAS_REFILL": "Recharge de Gaz",
+    "CYLINDER_6KG": "Cylindre 6 Kg",
+    "CYLINDER_12KG": "Cylindre 12 Kg",
+    "CYLINDER_20KG": "Cylindre 20 Kg",
+    "CYLINDER_38KG": "Cylindre 38 Kg",
+    "GAS_REFILL_DESC": "Rechargez votre cylindre GPL existant",
+    "CYLINDER_6KG_DESC": "Nouveau cylindre de gaz 6 kg",
+    "CYLINDER_12KG_DESC": "Nouveau cylindre de gaz 12 kg",
+    "CYLINDER_20KG_DESC": "Nouveau cylindre de gaz 20 kg",
+    "CYLINDER_38KG_DESC": "Nouveau cylindre de gaz 38 kg"
+  },
+  "status": {
+    "PENDING": "En Attente",
+    "CONFIRMED": "Confirmé",
+    "PROCESSING": "En Traitement",
+    "OUT_FOR_DELIVERY": "En Livraison",
+    "DELIVERED": "Livré",
+    "COMPLETED": "Terminé",
+    "CANCELLED": "Annulé"
+  },
+  "tracking": {
+    "title": "Suivre la Commande",
+    "orderPlaced": "Commande Passée",
+    "confirmed": "Confirmée",
+    "processing": "En Traitement",
+    "outForDelivery": "En Livraison",
+    "delivered": "Livrée"
+  },
+  "staff": {
+    "dashboard": "Tableau de Bord du Personnel",
+    "incomingOrders": "Commandes Entrantes",
+    "filterByStatus": "Filtrer par Statut",
+    "filterByProduct": "Filtrer par Produit",
+    "filterByDate": "Filtrer par Date",
+    "updateStatus": "Mettre à Jour le Statut",
+    "assignTo": "Assigner À",
+    "noOrders": "Aucune commande pour le moment"
+  },
+  "admin": {
+    "dashboard": "Tableau de Bord Admin",
+    "totalOrders": "Total des Commandes",
+    "completionRate": "Taux de Complétion",
+    "ordersToday": "Commandes Aujourd'hui",
+    "topProducts": "Meilleurs Produits",
+    "staffAccounts": "Comptes du Personnel",
+    "addStaff": "Ajouter du Personnel",
+    "editStaff": "Modifier le Personnel",
+    "deactivate": "Désactiver",
+    "activate": "Activer"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite. Veuillez réessayer.",
+    "network": "Pas de connexion. Votre commande est sauvegardée et se synchronisera automatiquement.",
+    "notFound": "Non trouvé",
+    "unauthorized": "Vous n'êtes pas autorisé à voir cette page",
+    "validation": "Veuillez vérifier vos entrées et réessayer",
+    "otpExpired": "Code expiré. Veuillez en demander un nouveau.",
+    "otpInvalid": "Code invalide. Veuillez réessayer."
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "noResults": "Aucun résultat trouvé",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "all": "Tous",
+    "by": "par",
+    "at": "à"
+  }
+}

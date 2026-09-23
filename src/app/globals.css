@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply font-body;
+  }
+
+  h1, h2, h3, h4, h5 {
+    @apply font-display;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .bg-ember-gradient {
+    background: linear-gradient(135deg, #ffa000 0%, #f97316 50%, #ea580c 100%);
+  }
+
+  .bg-navy-gradient {
+    background: linear-gradient(135deg, #060d40 0%, #0d1b5e 50%, #1a2a7c 100%);
+  }
+
+  .text-ember-gradient {
+    background: linear-gradient(135deg, #ffa000, #ea580c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}

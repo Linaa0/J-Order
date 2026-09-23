@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CLIENT
+  ORDER_STAFF
+  TECHNICIAN
+  ADMIN
+}
+
+enum ProductCategory {
+  GAS_REFILL
+  CYLINDER_6KG
+  CYLINDER_12KG
+  CYLINDER_20KG
+  CYLINDER_38KG
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationChannel {
+  SMS
+  PUSH
+  IN_APP
+}
+
+model User {
+  id                String    @id @default(cuid())
+  phone             String    @unique
+  name              String?
+  email             String?   @unique
+  role              UserRole  @default(CLIENT)
+  preferredLanguage String    @default("en")
+  isActive          Boolean   @default(true)
+  isGuest           Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  orders            Order[]   @relation("ClientOrders")
+  assignedOrders    Order[]   @relation("AssignedOrders")
+  statusChanges     OrderStatusHistory[]
+  notifications     Notification[]
+  staffCategories   StaffProductCategory[]
+  otpCodes          OtpCode[]
+
+  @@map("users")
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("otp_codes")
+}
+
+model StaffProductCategory {
+  id       String          @id @default(cuid())
+  userId   String
+  category ProductCategory
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+  @@map("staff_product_categories")
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  orderNumber       String      @unique
+  clientId          String
+  assignedToId      String?
+  status            OrderStatus @default(PENDING)
+  notes             String?
+  deliveryAddress   String
+  deliveryLat       Float?
+  deliveryLng       Float?
+  preferredDate     DateTime
+  preferredTime     String
+  cancellationReason String?
+  isGuestOrder      Boolean     @default(false)
+  guestPhone        String?
+  syncedAt          DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  client            User        @relation("ClientOrders", fields: [clientId], references: [id])
+  assignedTo        User?       @relation("AssignedOrders", fields: [assignedToId], references: [id])
+  items             OrderItem[]
+  statusHistory     OrderStatusHistory[]
+  notifications     Notification[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String          @id @default(cuid())
+  orderId   String
+  product   ProductCategory
+  quantity  Int
+  unitPrice Decimal?        @db.Decimal(10, 2)
+
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(cuid())
+  orderId   String
+  changedBy String
+  oldStatus OrderStatus?
+  newStatus OrderStatus
+  reason    String?
+  createdAt DateTime    @default(now())
+
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [changedBy], references: [id])
+
+  @@map("order_status_history")
+}
+
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  orderId   String?
+  channel   NotificationChannel
+  title     String
+  body      String
+  isRead    Boolean             @default(false)
+  sentAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order     Order?              @relation(fields: [orderId], references: [id])
+
+  @@map("notifications")
+}

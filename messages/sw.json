@@ -1,0 +1,142 @@
+{
+  "app": {
+    "name": "J Order",
+    "tagline": "Gesi inayoletwa mlangoni mwako"
+  },
+  "nav": {
+    "home": "Nyumbani",
+    "orders": "Maagizo Yangu",
+    "newOrder": "Agizo Jipya",
+    "dashboard": "Dashibodi",
+    "settings": "Mipangilio",
+    "signOut": "Toka"
+  },
+  "auth": {
+    "title": "Karibu J Order",
+    "subtitle": "Ingiza nambari yako ya simu ili uendelee",
+    "phonePlaceholder": "Nambari ya simu",
+    "sendOtp": "Tuma Nambari",
+    "otpTitle": "Ingiza Nambari ya Uthibitisho",
+    "otpSubtitle": "Tulituma nambari ya tarakimu 6 kwa",
+    "otpPlaceholder": "Nambari ya tarakimu 6",
+    "verify": "Thibitisha",
+    "resend": "Tuma Tena Nambari",
+    "continueAsGuest": "Endelea kama Mgeni",
+    "haveAccount": "Una akaunti tayari?",
+    "noAccount": "Mpya hapa?",
+    "signIn": "Ingia",
+    "signUp": "Fungua Akaunti",
+    "name": "Jina Kamili",
+    "namePlaceholder": "Jina lako kamili"
+  },
+  "language": {
+    "select": "Chagua Lugha Yako",
+    "subtitle": "Chagua lugha unayoipendelea"
+  },
+  "order": {
+    "new": "Agizo Jipya",
+    "step1": "Chagua Bidhaa",
+    "step2": "Idadi",
+    "step3": "Mahali pa Uwasilishaji",
+    "step4": "Tarehe na Wakati",
+    "step5": "Kagua na Thibitisha",
+    "product": "Bidhaa",
+    "quantity": "Idadi",
+    "location": "Mahali pa Uwasilishaji",
+    "locationRequired": "Mahali pa uwasilishaji inahitajika",
+    "locationHint": "Ingiza anwani yako kamili au tumia pini ya ramani",
+    "useMapPin": "Tumia Pini ya Ramani",
+    "date": "Tarehe Inayopendelewa ya Uwasilishaji",
+    "time": "Wakati Unaopendelewa wa Uwasilishaji",
+    "notes": "Maelezo ya Ziada",
+    "notesPlaceholder": "Maagizo maalum...",
+    "confirm": "Weka Agizo",
+    "back": "Rudi Nyuma",
+    "next": "Endelea",
+    "queued": "Agizo limehifadhiwa. Litatumwa unapounganika tena.",
+    "success": "Agizo Limewekwa",
+    "successMessage": "Agizo lako limepokelewa. Tutathibitisha hivi karibuni.",
+    "orderNumber": "Nambari ya Agizo",
+    "trackOrder": "Fuatilia Agizo",
+    "reorder": "Agiza Tena",
+    "cancel": "Futa Agizo",
+    "cancelReason": "Sababu ya kufuta",
+    "cancelConfirm": "Ndiyo, Futa Agizo"
+  },
+  "products": {
+    "GAS_REFILL": "Kujaza Gesi",
+    "CYLINDER_6KG": "Silinda ya 6 Kg",
+    "CYLINDER_12KG": "Silinda ya 12 Kg",
+    "CYLINDER_20KG": "Silinda ya 20 Kg",
+    "CYLINDER_38KG": "Silinda ya 38 Kg",
+    "GAS_REFILL_DESC": "Jaza tena silinda yako ya LPG",
+    "CYLINDER_6KG_DESC": "Silinda mpya ya gesi 6 kg",
+    "CYLINDER_12KG_DESC": "Silinda mpya ya gesi 12 kg",
+    "CYLINDER_20KG_DESC": "Silinda mpya ya gesi 20 kg",
+    "CYLINDER_38KG_DESC": "Silinda mpya ya gesi 38 kg"
+  },
+  "status": {
+    "PENDING": "Inasubiriwa",
+    "CONFIRMED": "Imethibitishwa",
+    "PROCESSING": "Inashughulikiwa",
+    "OUT_FOR_DELIVERY": "Inatolewa",
+    "DELIVERED": "Imetolewa",
+    "COMPLETED": "Imekamilika",
+    "CANCELLED": "Imefutwa"
+  },
+  "tracking": {
+    "title": "Fuatilia Agizo",
+    "orderPlaced": "Agizo Limewekwa",
+    "confirmed": "Imethibitishwa",
+    "processing": "Inashughulikiwa",
+    "outForDelivery": "Inatolewa",
+    "delivered": "Imetolewa"
+  },
+  "staff": {
+    "dashboard": "Dashibodi ya Wafanyakazi",
+    "incomingOrders": "Maagizo Yanayoingia",
+    "filterByStatus": "Chuja kwa Hali",
+    "filterByProduct": "Chuja kwa Bidhaa",
+    "filterByDate": "Chuja kwa Tarehe",
+    "updateStatus": "Sasisha Hali",
+    "assignTo": "Teua Kwa",
+    "noOrders": "Hakuna maagizo kwa sasa"
+  },
+  "admin": {
+    "dashboard": "Dashibodi ya Msimamizi",
+    "totalOrders": "Jumla ya Maagizo",
+    "completionRate": "Kiwango cha Ukamilishaji",
+    "ordersToday": "Maagizo Leo",
+    "topProducts": "Bidhaa Zinazoongoza",
+    "staffAccounts": "Akaunti za Wafanyakazi",
+    "addStaff": "Ongeza Mfanyakazi",
+    "editStaff": "Hariri Mfanyakazi",
+    "deactivate": "Zima",
+    "activate": "Washa"
+  },
+  "errors": {
+    "generic": "Kitu kimekwenda vibaya. Tafadhali jaribu tena.",
+    "network": "Hakuna muunganiko. Agizo lako limehifadhiwa na litasawazishwa kiotomatiki.",
+    "notFound": "Haikupatikana",
+    "unauthorized": "Huna ruhusa ya kuona ukurasa huu",
+    "validation": "Tafadhali angalia maingizo yako na ujaribu tena",
+    "otpExpired": "Nambari imeisha muda wake. Tafadhali omba mpya.",
+    "otpInvalid": "Nambari si sahihi. Tafadhali jaribu tena."
+  },
+  "common": {
+    "loading": "Inapakia...",
+    "save": "Hifadhi",
+    "cancel": "Ghairi",
+    "delete": "Futa",
+    "edit": "Hariri",
+    "view": "Tazama",
+    "close": "Funga",
+    "search": "Tafuta",
+    "noResults": "Hakuna matokeo",
+    "today": "Leo",
+    "yesterday": "Jana",
+    "all": "Yote",
+    "by": "na",
+    "at": "saa"
+  }
+}
