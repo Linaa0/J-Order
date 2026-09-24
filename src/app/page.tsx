@@ -4,87 +4,87 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FlameIcon } from '@/components/icons/ProductIcons'
-import { Button } from '@/components/ui/Button'
 
 const languages = [
-  { code: 'en', label: 'English', flag: '🇬🇧', sub: 'English' },
+  { code: 'en', label: 'English',    flag: '🇬🇧', sub: 'English'    },
   { code: 'rw', label: 'Kinyarwanda', flag: '🇷🇼', sub: 'Kinyarwanda' },
-  { code: 'fr', label: 'Français', flag: '🇫🇷', sub: 'French' },
-  { code: 'sw', label: 'Kiswahili', flag: '🇰🇪', sub: 'Swahili' },
+  { code: 'fr', label: 'Français',   flag: '🇫🇷', sub: 'French'     },
+  { code: 'sw', label: 'Kiswahili',  flag: '🇰🇪', sub: 'Swahili'    },
 ]
+
+function getRedirectPath(role: string | undefined) {
+  if (role === 'ADMIN') return '/admin/dashboard'
+  if (role === 'ORDER_STAFF' || role === 'TECHNICIAN') return '/staff/dashboard'
+  return '/orders'
+}
 
 export default function HomePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [showLanguage, setShowLanguage] = useState(false)
-  const [selectedLang, setSelectedLang] = useState<string | null>(null)
-  const [showSplash, setShowSplash] = useState(true)
 
+  const [showSplash, setShowSplash]         = useState(true)
+  const [showLanguage, setShowLanguage]     = useState(false)
+  const [langChosen, setLangChosen]         = useState(false)
+  const [selectedLang, setSelectedLang]     = useState<string | null>(null)
+
+  // Step 1: after 2 s dismiss splash, decide whether to show language picker
   useEffect(() => {
-    const hasVisited = localStorage.getItem('jorder_lang')
-    const timer = setTimeout(() => {
+    const t = setTimeout(() => {
       setShowSplash(false)
-      if (!hasVisited) {
+      const saved = localStorage.getItem('jorder_lang')
+      if (!saved) {
         setShowLanguage(true)
       } else {
-        handlePostLang()
+        setLangChosen(true)   // already picked before, go straight to redirect
       }
     }, 2000)
-    return () => clearTimeout(timer)
+    return () => clearTimeout(t)
   }, [])
 
-  function handlePostLang() {
-    if (status === 'loading') return
+  // Step 2: redirect once session is resolved AND language is chosen
+  useEffect(() => {
+    if (!langChosen) return
+    if (status === 'loading') return   // wait — don't redirect yet
+
     if (session?.user) {
-      const role = session.user.role
-      if (role === 'ADMIN') router.push('/admin/dashboard')
-      else if (role === 'ORDER_STAFF' || role === 'TECHNICIAN') router.push('/staff/dashboard')
-      else router.push('/orders')
+      router.replace(getRedirectPath(session.user.role))
     } else {
-      router.push('/login')
+      router.replace('/login')
     }
-  }
+  }, [langChosen, status, session, router])
 
   function selectLanguage(code: string) {
     localStorage.setItem('jorder_lang', code)
-    setSelectedLang(code)
     document.cookie = `NEXT_LOCALE=${code}; path=/; max-age=31536000`
-    setTimeout(() => {
-      setShowLanguage(false)
-      handlePostLang()
-    }, 400)
+    setSelectedLang(code)
+    setShowLanguage(false)
+    setLangChosen(true)   // triggers the effect above
   }
 
   return (
     <div className="min-h-screen bg-navy-gradient flex items-center justify-center relative overflow-hidden">
+      {/* Decorative background orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(6)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute rounded-full opacity-10"
+            className="absolute rounded-full"
             style={{
-              width: `${80 + i * 40}px`,
+              width:  `${80 + i * 40}px`,
               height: `${80 + i * 40}px`,
               background: 'linear-gradient(135deg, #ffa000, #ea580c)',
               left: `${10 + i * 15}%`,
-              top: `${20 + (i % 3) * 25}%`,
+              top:  `${20 + (i % 3) * 25}%`,
             }}
-            animate={{
-              y: [0, -20, 0],
-              scale: [1, 1.05, 1],
-              opacity: [0.05, 0.15, 0.05],
-            }}
-            transition={{
-              duration: 3 + i,
-              repeat: Infinity,
-              delay: i * 0.5,
-              ease: 'easeInOut',
-            }}
+            animate={{ y: [0, -20, 0], scale: [1, 1.05, 1], opacity: [0.04, 0.12, 0.04] }}
+            transition={{ duration: 3 + i, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }}
           />
         ))}
       </div>
 
       <AnimatePresence mode="wait">
+
+        {/* ── Splash ── */}
         {showSplash && (
           <motion.div
             key="splash"
@@ -117,6 +117,7 @@ export default function HomePage() {
           </motion.div>
         )}
 
+        {/* ── Language picker ── */}
         {showLanguage && !showSplash && (
           <motion.div
             key="language"
@@ -149,6 +150,26 @@ export default function HomePage() {
             </div>
           </motion.div>
         )}
+
+        {/* ── Waiting for session after language is chosen ── */}
+        {langChosen && !showSplash && !showLanguage && status === 'loading' && (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-white z-10"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.08, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="flex justify-center mb-4"
+            >
+              <FlameIcon size={56} />
+            </motion.div>
+            <p className="text-navy-300 text-sm">Loading...</p>
+          </motion.div>
+        )}
+
       </AnimatePresence>
     </div>
   )

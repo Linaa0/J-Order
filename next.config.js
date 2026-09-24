@@ -22,6 +22,24 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs'],
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Prevent server-only modules from bundling on the client
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+      }
+    }
+    // Suppress known noisy OpenTelemetry/Sentry webpack warnings
+    config.ignoreWarnings = [
+      { module: /opentelemetry/ },
+      { module: /require-in-the-middle/ },
+    ]
+    return config
+  },
 }
 
 module.exports = withNextIntl(withPWA(nextConfig))
