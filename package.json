@@ -11,9 +11,13 @@
     "test:ci": "jest --ci --passWithNoTests",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:db-up": "docker compose up -d db",
+    "db:db-down": "docker compose down",
+    "db:setup": "node scripts/run-app.js --db-only",
     "db:seed": "ts-node --project tsconfig.seed.json prisma/seed.ts",
     "db:studio": "prisma studio",
-    "generate:icons": "node scripts/generate-icons.mjs"
+    "generate:icons": "node scripts/generate-icons.mjs",
+    "app:run": "node scripts/run-app.js"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "10.2.9",
