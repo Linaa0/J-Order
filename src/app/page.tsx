@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -21,6 +21,7 @@ function getRedirectPath(role: string | undefined) {
 export default function HomePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const redirectAttemptedRef = useRef(false)
 
   const [showSplash, setShowSplash]         = useState(true)
   const [showLanguage, setShowLanguage]     = useState(false)
@@ -43,14 +44,16 @@ export default function HomePage() {
 
   // Step 2: redirect once session is resolved AND language is chosen
   useEffect(() => {
-    if (!langChosen) return
-    if (status === 'loading') return   // wait — don't redirect yet
+    if (!langChosen || status === 'loading' || redirectAttemptedRef.current) return
+
+    redirectAttemptedRef.current = true
 
     if (session?.user) {
       router.replace(getRedirectPath(session.user.role))
-    } else {
-      router.replace('/login')
+      return
     }
+
+    router.replace('/login')
   }, [langChosen, status, session, router])
 
   function selectLanguage(code: string) {

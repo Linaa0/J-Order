@@ -1,7 +1,7 @@
 import { withAuth } from 'next-auth/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
-const publicPaths = ['/', '/login', '/verify', '/track']
+const protectedPaths = ['/admin', '/staff', '/orders', '/order', '/settings']
 
 const authMiddleware = withAuth(
   function onSuccess(_req) {
@@ -19,14 +19,12 @@ const authMiddleware = withAuth(
 
 export default function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname
+  const isGuestCheckout = pathname === '/order/new' && req.nextUrl.searchParams.get('guest') === '1'
+  const isProtectedPath = protectedPaths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
+  )
 
-  const isPublic =
-    publicPaths.includes(pathname) ||
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/verify') ||
-    pathname.startsWith('/track')
-
-  if (isPublic) {
+  if (isGuestCheckout || !isProtectedPath) {
     return NextResponse.next()
   }
 
@@ -34,5 +32,5 @@ export default function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|.*\\..*).*)'],
+  matcher: ['/admin/:path*', '/staff/:path*', '/orders/:path*', '/order/:path*', '/settings/:path*'],
 }

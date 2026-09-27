@@ -1,10 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { TrendingUp, Package, CheckCircle2, XCircle, Users, Plus } from 'lucide-react'
+import { TrendingUp, Package, CheckCircle2, XCircle, Users, Plus, RefreshCw } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { OrderCardSkeleton } from '@/components/ui/Skeleton'
@@ -33,7 +33,7 @@ interface StaffUser {
 }
 
 export default function AdminDashboardPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
   const [staff, setStaff] = useState<StaffUser[]>([])
@@ -43,19 +43,39 @@ export default function AdminDashboardPage() {
   const [addingStaff, setAddingStaff] = useState(false)
   const [activeTab, setActiveTab] = useState<'analytics' | 'staff'>('analytics')
 
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [analyticsResponse, staffResponse] = await Promise.all([
+        fetch('/api/admin/analytics'),
+        fetch('/api/admin/users'),
+      ])
+
+      const [analyticsData, staffData] = await Promise.all([
+        analyticsResponse.json(),
+        staffResponse.json(),
+      ])
+
+      setAnalytics(analyticsData.data ?? null)
+      setStaff(staffData.data ?? [])
+    } catch (error) {
+      console.error('Failed to load admin dashboard', error)
+      toast.error('Failed to load dashboard data')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
-    if (session && session.user.role !== 'ADMIN') {
+    if (status === 'loading') return
+
+    if (!session || session.user.role !== 'ADMIN') {
       router.push('/')
       return
     }
-    Promise.all([
-      fetch('/api/admin/analytics').then((r) => r.json()),
-      fetch('/api/admin/users').then((r) => r.json()),
-    ]).then(([a, s]) => {
-      setAnalytics(a.data)
-      setStaff(s.data ?? [])
-    }).finally(() => setLoading(false))
-  }, [session])
+
+    void fetchDashboardData()
+  }, [status, session, fetchDashboardData, router])
 
   async function toggleStaffActive(userId: string, isActive: boolean) {
     const res = await fetch(`/api/admin/users/${userId}`, {
@@ -106,6 +126,14 @@ export default function AdminDashboardPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold text-navy-900">Admin Dashboard</h1>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => void fetchDashboardData()}
+          aria-label="Refresh admin dashboard"
+        >
+          <RefreshCw size={18} />
+        </Button>
       </div>
 
       <div className="flex gap-2">

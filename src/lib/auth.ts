@@ -2,9 +2,10 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { detectContactType, normalizeEmail, normalizePhone } from '@/lib/contact'
 
 const loginSchema = z.object({
-  phone: z.string().min(10),
+  contact: z.string().min(4).max(255),
   otp: z.string().length(6),
 })
 
@@ -16,19 +17,26 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
-      name: 'Phone OTP',
+      name: 'Email or Phone OTP',
       credentials: {
-        phone: { label: 'Phone', type: 'text' },
+        contact: { label: 'Email or Phone', type: 'text' },
         otp: { label: 'OTP', type: 'text' },
       },
       async authorize(credentials) {
         const parsed = loginSchema.safeParse(credentials)
         if (!parsed.success) return null
 
-        const { phone, otp } = parsed.data
+        const { contact, otp } = parsed.data
+        const type = detectContactType(contact)
+        const normalizedContact = type === 'email' ? normalizeEmail(contact) : normalizePhone(contact)
 
-        const user = await prisma.user.findUnique({
-          where: { phone },
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: normalizedContact },
+              { phone: normalizedContact },
+            ],
+          },
           include: { staffCategories: true },
         })
         if (!user || !user.isActive) return null
@@ -66,7 +74,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.phone = (user as { phone: string }).phone
+        token.phone = (user as { phone?: string }).phone ?? ''
         token.role = (user as { role: string }).role
         token.preferredLanguage = (user as { preferredLanguage: string }).preferredLanguage
         token.staffCategories = (user as { staffCategories: string[] }).staffCategories ?? []

@@ -29,7 +29,7 @@ export function useOfflineSync() {
           }),
         })
         if (res.ok) {
-          await db.offlineOrders.update(order.localId, { synced: true as unknown as number })
+          await db.offlineOrders.update(order.localId, { synced: true })
         } else {
           await db.offlineOrders.update(order.localId, {
             syncAttempts: order.syncAttempts + 1,

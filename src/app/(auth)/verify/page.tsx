@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { FlameIcon } from '@/components/icons/ProductIcons'
+import { resolveAuthContact } from '@/lib/contact'
 import { toast } from 'sonner'
 
 export default function VerifyPage() {
@@ -16,10 +17,19 @@ export default function VerifyPage() {
   const [error, setError] = useState('')
   const [countdown, setCountdown] = useState(60)
   const inputs = useRef<(HTMLInputElement | null)[]>([])
-  const phone = typeof window !== 'undefined' ? sessionStorage.getItem('jorder_phone') ?? '' : ''
+  const stored = typeof window !== 'undefined'
+    ? resolveAuthContact(
+        sessionStorage.getItem('jorder_contact'),
+        sessionStorage.getItem('jorder_contact_type'),
+        sessionStorage.getItem('jorder_phone')
+      )
+    : { contact: '', type: 'phone' as const }
+
+  const contact = stored.contact
+  const contactType = stored.type
 
   useEffect(() => {
-    if (!phone) {
+    if (!contact) {
       router.push('/login')
       return
     }
@@ -28,7 +38,7 @@ export default function VerifyPage() {
       setCountdown((c) => (c > 0 ? c - 1 : 0))
     }, 1000)
     return () => clearInterval(timer)
-  }, [])
+  }, [contact, router])
 
   function handleChange(idx: number, value: string) {
     if (!/^\d*$/.test(value)) return
@@ -52,7 +62,7 @@ export default function VerifyPage() {
     setLoading(true)
     try {
       const result = await signIn('credentials', {
-        phone,
+        contact,
         otp,
         redirect: false,
       })
@@ -76,10 +86,14 @@ export default function VerifyPage() {
     setResending(true)
     setError('')
     try {
+      const payload = contactType === 'email'
+        ? { contact, contactType: 'email' }
+        : { contact, contactType: 'phone', deliveryMethod: sessionStorage.getItem('jorder_delivery_method') ?? 'sms' }
+
       await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify(payload),
       })
       setCountdown(60)
       toast.success('New code sent')
@@ -110,7 +124,7 @@ export default function VerifyPage() {
           <h1 className="font-display text-3xl font-bold text-white mb-2">Enter Verification Code</h1>
           <p className="text-navy-300 text-sm">
             We sent a 6 digit code to{' '}
-            <span className="text-white font-medium">{phone}</span>
+            <span className="text-white font-medium">{contact}</span>
           </p>
         </div>
 

@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { RefreshCw, Filter, CheckCircle, Clock, Truck } from 'lucide-react'
+import { RefreshCw, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { StatusBadge } from '@/components/ui/Badge'
@@ -19,7 +19,7 @@ const STATUS_OPTIONS = ['', 'PENDING', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIV
 const PRODUCT_OPTIONS = ['', 'GAS_REFILL', 'CYLINDER_6KG', 'CYLINDER_12KG', 'CYLINDER_20KG', 'CYLINDER_38KG']
 
 export default function StaffDashboardPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [orders, setOrders] = useState<OrderWithDetails[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,14 +45,15 @@ export default function StaffDashboardPage() {
   }, [statusFilter, productFilter])
 
   useEffect(() => {
+    if (status === 'loading') return
+
     if (session?.user?.role !== 'ORDER_STAFF' && session?.user?.role !== 'TECHNICIAN' && session?.user?.role !== 'ADMIN') {
       router.push('/')
       return
     }
-    fetchOrders()
-    const interval = setInterval(fetchOrders, 30000)
-    return () => clearInterval(interval)
-  }, [session, fetchOrders])
+
+    void fetchOrders()
+  }, [status, session, fetchOrders, router])
 
   async function updateOrderStatus() {
     if (!selectedOrder || !newStatus) return

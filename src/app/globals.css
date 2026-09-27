@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,17 +7,42 @@
 @layer base {
   :root {
     color-scheme: light;
+    --bg-primary: #f5f7fb;
+    --bg-surface: #ffffff;
+    --bg-surface-soft: #eef2fa;
+    --bg-navy: #0f172a;
+    --navy-700: #1d2c5e;
+    --navy-800: #14234e;
+    --navy-900: #0b122e;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --success: #166534;
+    --warning: #a16207;
+    --error: #b91c1c;
+    --accent: #f59e0b;
+    --accent-strong: #ea580c;
   }
 
   * {
     box-sizing: border-box;
   }
 
-  body {
-    @apply font-body;
+  html {
+    scroll-behavior: smooth;
   }
 
-  h1, h2, h3, h4, h5 {
+  body {
+    @apply font-body;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
     @apply font-display;
   }
 
@@ -26,32 +51,37 @@
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 }
 
 @layer utilities {
   .bg-ember-gradient {
-    background: linear-gradient(135deg, #ffa000 0%, #f97316 50%, #ea580c 100%);
+    background: linear-gradient(135deg, #f8cf72 0%, #f59e0b 28%, #f97316 62%, #ea580c 100%);
   }
 
   .bg-navy-gradient {
-    background: linear-gradient(135deg, #060d40 0%, #0d1b5e 50%, #1a2a7c 100%);
+    background: linear-gradient(135deg, #0b1025 0%, #101d44 38%, #1b2d67 100%);
+  }
+
+  .bg-surface-soft {
+    background: var(--bg-surface-soft);
   }
 
   .text-ember-gradient {
-    background: linear-gradient(135deg, #ffa000, #ea580c);
+    background: linear-gradient(135deg, #f8cf72 0%, #f59e0b 35%, #ea580c 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 }
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
 }

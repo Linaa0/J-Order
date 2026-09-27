@@ -1,40 +1,81 @@
 'use client'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Phone } from 'lucide-react'
+import { Mail, MessageSquareText, Phone, Smartphone, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { FlameIcon } from '@/components/icons/ProductIcons'
+import { Wordmark } from '@/components/branding/Wordmark'
+import { detectContactType, normalizeEmail, normalizePhone } from '@/lib/contact'
 import { sanitizePhone } from '@/lib/utils'
-import { toast } from 'sonner'
+
+type DeliveryMethod = 'sms' | 'whatsapp'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [phone, setPhone] = useState('')
+  const [contact, setContact] = useState('')
+  const [contactType, setContactType] = useState<'email' | 'phone'>('phone')
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('sms')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const isEmailLookup = useMemo(() => contactType === 'email' || contact.includes('@'), [contact, contactType])
+
+  function setContactValue(value: string) {
+    setContact(value)
+    const nextType = detectContactType(value)
+    if (nextType !== 'phone' || value.includes('@')) {
+      setContactType(nextType)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (!phone.trim()) {
-      setError('Phone number is required')
+    const trimmed = contact.trim()
+
+    if (!trimmed) {
+      setError('Email or phone number is required')
       return
     }
+
+    if (isEmailLookup) {
+      const email = normalizeEmail(trimmed)
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setError('Please enter a valid email address')
+        return
+      }
+    } else {
+      const phone = sanitizePhone(trimmed)
+      if (!phone || phone.length < 10) {
+        setError('Please enter a valid phone number')
+        return
+      }
+    }
+
     setLoading(true)
     try {
-      const cleanPhone = sanitizePhone(phone)
+      const payload = isEmailLookup
+        ? { contact: normalizeEmail(trimmed), contactType: 'email' }
+        : { contact: sanitizePhone(trimmed), contactType: 'phone', deliveryMethod }
+
       const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: cleanPhone }),
+        body: JSON.stringify(payload),
       })
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || 'Failed to send code')
         return
       }
-      sessionStorage.setItem('jorder_phone', cleanPhone)
+
+      const storedContact = isEmailLookup ? normalizeEmail(trimmed) : sanitizePhone(trimmed)
+      const storedType = isEmailLookup ? 'email' : 'phone'
+
+      sessionStorage.setItem('jorder_contact', storedContact)
+      sessionStorage.setItem('jorder_phone', storedContact)
+      sessionStorage.setItem('jorder_contact_type', storedType)
+      sessionStorage.setItem('jorder_delivery_method', deliveryMethod)
       sessionStorage.setItem('jorder_new_user', data.isNewUser ? 'true' : 'false')
       router.push('/verify')
     } catch {
@@ -49,51 +90,103 @@ export default function LoginPage() {
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-sm"
+        transition={{ duration: 0.28 }}
+        className="w-full max-w-md"
       >
-        <div className="text-center mb-8">
-          <FlameIcon size={56} className="mx-auto mb-4" />
-          <h1 className="font-display text-3xl font-bold text-white mb-2">Welcome to J Order</h1>
-          <p className="text-navy-300">Enter your phone number to continue</p>
+        <div className="mb-8 text-center">
+          <Wordmark dark className="justify-center" />
+          <p className="mt-4 text-sm text-slate-300">Choose how you want to continue</p>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 shadow-navy">
+        <div className="rounded-3xl bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.25)]">
           <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="rounded-2xl border border-navy-200 bg-navy-50 p-1">
+              <div className="grid grid-cols-2 gap-1">
+                <button
+                  type="button"
+                  onClick={() => setContactType('email')}
+                  className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all ${
+                    contactType === 'email' ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-500'
+                  }`}
+                >
+                  <Mail size={16} />
+                  Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setContactType('phone')}
+                  className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all ${
+                    contactType === 'phone' ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-500'
+                  }`}
+                >
+                  <Phone size={16} />
+                  Phone number
+                </button>
+              </div>
+            </div>
+
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">
-                <Phone size={18} />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                {isEmailLookup ? <Mail size={18} /> : <Phone size={18} />}
               </div>
               <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+250 7XX XXX XXX"
-                className="h-12 w-full rounded-xl border-2 border-navy-200 bg-white pl-10 pr-4 text-navy-900 placeholder-navy-300 focus:outline-none focus:border-ember-700 focus:ring-2 focus:ring-ember-700/20 transition-all"
-                aria-label="Phone number"
-                autoComplete="tel"
-                inputMode="tel"
+                type={isEmailLookup ? 'email' : 'tel'}
+                value={contact}
+                onChange={(e) => setContactValue(e.target.value)}
+                placeholder={isEmailLookup ? 'you@example.com' : '+250 7XX XXX XXX'}
+                className="h-12 w-full rounded-xl border-2 border-slate-200 bg-white pl-11 pr-4 text-navy-900 placeholder-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                aria-label={isEmailLookup ? 'Email address' : 'Phone number'}
+                autoComplete={isEmailLookup ? 'email' : 'tel'}
+                inputMode={isEmailLookup ? 'email' : 'tel'}
               />
             </div>
-            {error && (
-              <p className="text-sm text-red-600" role="alert">{error}</p>
+
+            {!isEmailLookup && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <p className="mb-3 text-xs font-medium uppercase tracking-[0.08em] text-slate-500">Delivery method</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryMethod('sms')}
+                    className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-all ${
+                      deliveryMethod === 'sms' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-slate-200 bg-white text-slate-600'
+                    }`}
+                  >
+                    <Smartphone size={16} />
+                    SMS
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryMethod('whatsapp')}
+                    className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-all ${
+                      deliveryMethod === 'whatsapp' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600'
+                    }`}
+                  >
+                    <MessageSquareText size={16} />
+                    WhatsApp
+                  </button>
+                </div>
+              </div>
             )}
+
+            {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
+
             <Button type="submit" loading={loading} className="w-full" size="lg">
-              Send Verification Code
+              Send verification code
             </Button>
           </form>
 
-          <div className="mt-4 pt-4 border-t border-navy-100">
+          <div className="mt-4 border-t border-slate-200 pt-4 text-center">
             <button
               onClick={() => router.push('/order/new?guest=1')}
-              className="w-full text-center text-sm text-navy-500 hover:text-navy-800 transition-colors py-2"
+              className="w-full py-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-800"
             >
-              Continue as Guest
+              Continue as guest
             </button>
           </div>
         </div>
 
-        <p className="text-center text-navy-400 text-sm mt-6">
+        <p className="mt-6 text-center text-sm text-slate-300">
           Gas Engineering and Services Ltd · Gasabo, Kigali
         </p>
       </motion.div>
