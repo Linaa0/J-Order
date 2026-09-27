@@ -16,23 +16,40 @@ function generateOtp(): string {
   return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
-async function sendEmailOtp(email: string, otp: string) {
-  const apiKey = process.env.RESEND_API_KEY
-  const from = process.env.RESEND_FROM || 'onboarding@resend.dev'
-
-  if (!apiKey) {
-    console.log(`[DEV] OTP for ${email}: ${otp}`)
-    return
+function getMessagingConfig() {
+  return {
+    emailApiKey: process.env.RESEND_API_KEY,
+    emailFrom: process.env.RESEND_FROM,
+    atApiKey: process.env.AT_API_KEY,
+    atUsername: process.env.AT_USERNAME,
+    atSmsSender: process.env.AT_SENDER_ID,
+    atWhatsappNumber: process.env.AT_WHATSAPP_NUMBER || process.env.AT_SENDER_ID,
   }
+}
+
+function logDebugOtp(label: string, otp: string, target: string) {
+  if (process.env.NODE_ENV !== 'production') {
+    console.info(`[DEV OTP DEBUG] ${label} ${target}: ${otp}`)
+  }
+}
+
+async function sendEmailOtp(email: string, otp: string) {
+  const { emailApiKey, emailFrom } = getMessagingConfig()
+
+  if (!emailApiKey || !emailFrom) {
+    throw new Error('Email delivery is not configured. Add RESEND_API_KEY and RESEND_FROM in .env.local or the runtime environment.')
+  }
+
+  logDebugOtp('generated email code for', otp, email)
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${emailApiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from,
+      from: emailFrom,
       to: [email],
       subject: 'Your J Order verification code',
       html: `<p>Your J Order verification code is <strong>${otp}</strong>. It is valid for 10 minutes.</p>`,
@@ -42,51 +59,61 @@ async function sendEmailOtp(email: string, otp: string) {
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`Email send failed: ${text}`)
+    throw new Error(`Email provider rejected the request: ${text}`)
   }
 }
 
-async function sendSmsOtp(phone: string, otp: string, deliveryMethod: 'sms' | 'whatsapp' = 'sms') {
-  if (process.env.AT_API_KEY && process.env.AT_USERNAME) {
-    const africastalking = (await import('africastalking')).default
-    const at = africastalking({
-      apiKey: process.env.AT_API_KEY,
-      username: process.env.AT_USERNAME,
-    })
+async function sendSmsOtp(phone: string, otp: string) {
+  const { atApiKey, atUsername, atSmsSender } = getMessagingConfig()
 
-    if (deliveryMethod === 'whatsapp') {
-      try {
-        const whatsapp = (at as { WhatsApp?: { send: (payload: { to: string[]; message: string }) => Promise<unknown> } }).WhatsApp
-        if (whatsapp) {
-          await whatsapp.send({
-            to: [phone],
-            message: `Your J Order verification code is ${otp}. Valid for 10 minutes.`,
-          })
-          return
-        }
-      } catch (error) {
-        console.warn('WhatsApp delivery failed, falling back to SMS', error)
-      }
-    }
-
-    try {
-      await at.SMS.send({
-        to: [phone],
-        message: `Your J Order verification code is: ${otp}. Valid for 10 minutes.`,
-        from: process.env.AT_SENDER_ID,
-      })
-      return
-    } catch (smsError) {
-      if (deliveryMethod === 'whatsapp') {
-        console.warn('WhatsApp failed and SMS also failed', smsError)
-        throw smsError
-      }
-      console.error('SMS send error:', smsError)
-      throw smsError
-    }
+  if (!atApiKey || !atUsername || !atSmsSender) {
+    throw new Error('SMS delivery is not configured. Add AT_API_KEY, AT_USERNAME, and AT_SENDER_ID in .env.local or the runtime environment.')
   }
 
-  console.log(`[DEV] OTP for ${phone}: ${otp}`)
+  logDebugOtp('generated SMS code for', otp, phone)
+
+  const africastalking = (await import('africastalking')).default
+  const at = africastalking({
+    apiKey: atApiKey,
+    username: atUsername,
+  })
+
+  const response = await at.SMS.send({
+    to: [phone],
+    message: `Your J Order verification code is: ${otp}. Valid for 10 minutes.`,
+    from: atSmsSender,
+  })
+
+  return response
+}
+
+async function sendWhatsAppOtp(phone: string, otp: string) {
+  const { atApiKey, atUsername, atWhatsappNumber } = getMessagingConfig()
+
+  if (!atApiKey || !atUsername || !atWhatsappNumber) {
+    throw new Error('WhatsApp delivery is not configured. Add AT_API_KEY, AT_USERNAME, and AT_WHATSAPP_NUMBER in .env.local or the runtime environment.')
+  }
+
+  logDebugOtp('generated WhatsApp code for', otp, phone)
+
+  const africastalking = (await import('africastalking')).default
+  const at = africastalking({
+    apiKey: atApiKey,
+    username: atUsername,
+  })
+
+  const whatsapp = (at as { WhatsApp?: { send: (payload: { to: string[]; message: string }) => Promise<unknown> } }).WhatsApp
+
+  if (!whatsapp) {
+    throw new Error('WhatsApp delivery is not supported by the configured Africa\'s Talking client.')
+  }
+
+  const response = await whatsapp.send({
+    to: [phone],
+    message: `Your J Order verification code is ${otp}. Valid for 10 minutes.`,
+  })
+
+  return response
 }
 
 export async function POST(req: NextRequest) {
@@ -126,9 +153,9 @@ export async function POST(req: NextRequest) {
       await sendEmailOtp(email, otp)
 
       return NextResponse.json({
-        message: 'Code sent',
+        message: 'Code sent via email',
+        channel: 'email',
         isNewUser: !user.name,
-        ...(process.env.NODE_ENV === 'development' ? { otp } : {}),
       })
     }
 
@@ -149,22 +176,39 @@ export async function POST(req: NextRequest) {
     await prisma.otpCode.create({ data: { userId: user.id, code: otp, expiresAt } })
 
     const delivery = parsed.data.deliveryMethod ?? 'sms'
+
+    let usedChannel: 'sms' | 'whatsapp' = 'sms'
+
     try {
-      await sendSmsOtp(safePhone, otp, delivery)
-    } catch (error) {
       if (delivery === 'whatsapp') {
-        console.warn('WhatsApp attempt failed, retrying with SMS fallback', error)
-        await sendSmsOtp(safePhone, otp, 'sms')
+        await sendWhatsAppOtp(safePhone, otp)
+        usedChannel = 'whatsapp'
+      } else {
+        await sendSmsOtp(safePhone, otp)
+      }
+    } catch (error) {
+      const whatsappError = error instanceof Error ? error : new Error(String(error))
+      console.error('Primary delivery failed:', whatsappError)
+
+      if (delivery === 'whatsapp') {
+        console.warn('WhatsApp delivery failed, retrying via SMS as fallback.')
+        try {
+          await sendSmsOtp(safePhone, otp)
+          usedChannel = 'sms'
+        } catch (smsError) {
+          const smsFailure = smsError instanceof Error ? smsError : new Error(String(smsError))
+          console.error('SMS fallback failed:', smsFailure)
+          throw new Error(`WhatsApp delivery failed and SMS fallback also failed. ${smsFailure.message}`)
+        }
       } else {
         throw error
       }
     }
 
     return NextResponse.json({
-      message: 'Code sent',
+      message: `Code sent via ${usedChannel}`,
+      channel: usedChannel,
       isNewUser: !user.name,
-      deliveryMethod: delivery === 'whatsapp' ? 'whatsapp' : 'sms',
-      ...(process.env.NODE_ENV === 'development' ? { otp } : {}),
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
@@ -182,6 +226,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    return NextResponse.json({ error: 'Failed to send code' }, { status: 500 })
+    if (message.includes('not configured') || message.includes('rejected the request') || message.includes('failed and SMS fallback')) {
+      return NextResponse.json({ error: message }, { status: 503 })
+    }
+
+    return NextResponse.json({ error: 'Failed to send code. Please try again or choose another delivery method.' }, { status: 500 })
   }
 }
