@@ -1,9 +1,11 @@
-const { spawn, execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
+const { spawn, execSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 
-const projectRoot = path.resolve(__dirname, '..')
-const dockerComposePath = path.join(projectRoot, 'docker-compose.yml')
+const projectRoot = path.resolve(__dirname, "..");
+const dockerComposePath = path.join(projectRoot, "docker-compose.yml");
+const postgresService = "postgresql-x64-18";
+const postgresBin = "C:\\Program Files\\PostgreSQL\\18\\bin";
 
 function run(command, extraEnv = {}) {
   return new Promise((resolve, reject) => {
@@ -11,109 +13,136 @@ function run(command, extraEnv = {}) {
       shell: true,
       cwd: projectRoot,
       env: { ...process.env, ...extraEnv },
-      stdio: 'inherit',
-    })
+      stdio: "inherit",
+    });
 
-    child.on('exit', (code) => {
+    child.on("exit", (code) => {
       if (code === 0) {
-        resolve()
+        resolve();
       } else {
-        reject(new Error(`${command} exited with code ${code}`))
+        reject(new Error(`${command} exited with code ${code}`));
       }
-    })
+    });
 
-    child.on('error', reject)
-  })
+    child.on("error", reject);
+  });
 }
 
 function hasDocker() {
   try {
-    execSync('docker --version', { stdio: 'ignore' })
-    return true
+    execSync("docker --version", { stdio: "ignore" });
+    return true;
   } catch {
-    return false
+    return false;
   }
 }
 
 function hasWindowsLocalPostgresService() {
-  const serviceName = 'postgresql-x64-18'
   try {
-    const output = execSync(`Get-Service -Name ${serviceName} -ErrorAction SilentlyContinue`, { stdio: 'pipe', shell: 'powershell.exe' })
-    return output && output.toString().includes(serviceName)
+    const output = execSync(
+      `Get-Service -Name ${postgresService} -ErrorAction SilentlyContinue`,
+      { stdio: "pipe", shell: "powershell.exe" },
+    );
+    return output && output.toString().includes(postgresService);
   } catch {
-    return false
+    return false;
   }
 }
 
-function ensureDockerComposeExists() {
-  if (hasDocker()) {
-    return
-  }
-
-  if (!fs.existsSync(dockerComposePath)) {
-    console.warn('No Docker Compose file found. The app can still run with a local PostgreSQL installation.')
-  }
+function databaseUrl(port) {
+  const url =
+    process.env.DATABASE_URL ||
+    "postgresql://jorder:jorderpass@localhost:5432/jorder";
+  return url.replace(/:\/\/([^/:]+)(?::\d+)?\//, `://$1:${port}/`);
 }
 
-async function startWindowsPostgresService() {
-  const serviceName = 'postgresql-x64-18'
+function isDatabaseReady(port) {
+  const pgIsReady = path.join(postgresBin, "pg_isready.exe");
   try {
-    execSync(`Start-Service -Name ${serviceName}`, { shell: 'powershell.exe', stdio: 'inherit' })
-    return true
-  } catch (error) {
-    console.error(`\nLocal PostgreSQL is installed but needs administrator rights to start.`)
-    console.error('Open PowerShell as Administrator and run:')
-    console.error(`  Start-Service -Name ${serviceName}`)
-    console.error('Then rerun:')
-    console.error('  npm run app:run')
-    return false
+    execSync(`"${pgIsReady}" -h localhost -p ${port}`, { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
   }
+}
+
+function startWindowsPostgresService() {
+  let status = "";
+  try {
+    status = execSync(`(Get-Service -Name ${postgresService}).Status`, {
+      encoding: "utf8",
+      shell: "powershell.exe",
+      stdio: "pipe",
+    }).trim();
+  } catch {
+    throw new Error(
+      `Could not find the PostgreSQL service ${postgresService}.`,
+    );
+  }
+
+  if (status !== "Running") {
+    console.log("Requesting Windows approval to start PostgreSQL...");
+    const command = `Start-Service -Name '${postgresService}'`;
+    const escaped = command.replace(/'/g, "''");
+    execSync(
+      `Start-Process powershell.exe -Verb RunAs -Wait -ArgumentList '-NoProfile -Command "${escaped}"'`,
+      {
+        shell: "powershell.exe",
+        stdio: "inherit",
+      },
+    );
+  }
+
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    if (isDatabaseReady(5432)) return;
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000);
+  }
+
+  throw new Error(
+    "PostgreSQL service started but did not become ready on port 5432.",
+  );
 }
 
 async function setupDatabase() {
-  if (hasDocker()) {
-    console.log('Docker detected. Starting PostgreSQL via Docker...')
-    try {
-      await run('docker compose up -d db')
-    } catch (error) {
-      console.error('\nDocker startup failed. Trying the local PostgreSQL service fallback...')
-      if (!(await startWindowsPostgresService())) {
-        throw new Error('No PostgreSQL startup path is available on this machine. Install Docker Desktop or start PostgreSQL as Administrator.')
-      }
-    }
-  } else if (hasWindowsLocalPostgresService()) {
-    console.log('Local PostgreSQL service detected. Starting it...')
-    if (!(await startWindowsPostgresService())) {
-      throw new Error('PostgreSQL service could not be started without administrator rights.')
-    }
+  let dbUrl = databaseUrl(5432);
+
+  if (hasWindowsLocalPostgresService()) {
+    console.log("Using the installed PostgreSQL service...");
+    startWindowsPostgresService();
+  } else if (hasDocker() && fs.existsSync(dockerComposePath)) {
+    console.log("Starting PostgreSQL with Docker...");
+    await run("docker compose up -d db");
+    dbUrl = databaseUrl(5433);
   } else {
-    throw new Error('Neither Docker nor a local PostgreSQL service is available. Install Docker Desktop or PostgreSQL 18 on this machine.')
+    throw new Error(
+      "No local PostgreSQL service or usable Docker setup was found. Install PostgreSQL 18 or Docker Desktop.",
+    );
   }
 
-  console.log('Preparing Prisma database...')
-  await run('npx prisma generate')
-  await run('npx prisma migrate deploy')
+  console.log("Preparing Prisma database...");
+  await run("npx prisma generate", { DATABASE_URL: dbUrl });
+  await run("npx prisma migrate deploy", { DATABASE_URL: dbUrl });
+  return dbUrl;
 }
 
 async function main() {
-  const mode = process.argv.includes('--db-only') ? 'db-only' : 'full'
+  const mode = process.argv.includes("--db-only") ? "db-only" : "full";
 
   try {
-    ensureDockerComposeExists()
-    await setupDatabase()
+    const dbUrl = await setupDatabase();
 
-    if (mode === 'full') {
-      console.log('Starting Next.js app...')
-      await run('npm run dev')
-      return
+    if (mode === "full") {
+      console.log("Starting Next.js app...");
+      await run("npm run dev", { DATABASE_URL: dbUrl });
+      return;
     }
 
-    console.log('Database setup complete. Run "npm run dev" to start the app.')
+    console.log('Database setup complete. Run "npm run dev" to start the app.');
   } catch (error) {
-    console.error('\nStartup failed:')
-    console.error(error.message)
-    process.exit(1)
+    console.error("\nStartup failed:");
+    console.error(error.message);
+    process.exit(1);
   }
 }
 
-main()
+main();
