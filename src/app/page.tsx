@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FlameIcon } from '@/components/icons/ProductIcons'
+import { GearLogo } from '@/components/branding/GearLogo'
 
 const languages = [
   { code: 'en', label: 'English',    flag: '🇬🇧', sub: 'English'    },
@@ -97,14 +97,7 @@ export default function HomePage() {
             transition={{ duration: 0.4 }}
             className="text-center text-white z-10 px-8"
           >
-            <motion.div
-              animate={{ scale: [1, 1.08, 1] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-              className="mb-8 flex justify-center"
-            >
-              <FlameIcon size={80} />
-            </motion.div>
-            <h1 className="font-display text-5xl font-bold mb-3">J Order</h1>
+            <GearLogo dark animated layout="stacked" className="mb-8" iconClassName="h-24 w-32" wordmarkClassName="text-5xl" />
             <p className="text-navy-300 text-lg">Gas Engineering and Services Ltd</p>
             <p className="text-navy-400 text-sm mt-1">Gasabo, Kigali, Rwanda</p>
             <div className="mt-8 flex justify-center gap-1">
@@ -130,7 +123,7 @@ export default function HomePage() {
             transition={{ duration: 0.35 }}
             className="text-center text-white z-10 px-6 w-full max-w-sm"
           >
-            <FlameIcon size={48} className="mx-auto mb-6" />
+            <GearLogo dark animated className="mx-auto mb-6" iconClassName="h-12 w-16" wordmarkClassName="text-3xl" />
             <h2 className="font-display text-3xl font-bold mb-2">Welcome to J Order</h2>
             <p className="text-navy-300 mb-8">Choose your language to get started</p>
             <div className="grid grid-cols-2 gap-3">
@@ -162,13 +155,7 @@ export default function HomePage() {
             animate={{ opacity: 1 }}
             className="text-center text-white z-10"
           >
-            <motion.div
-              animate={{ scale: [1, 1.08, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="flex justify-center mb-4"
-            >
-              <FlameIcon size={56} />
-            </motion.div>
+            <GearLogo dark animated layout="stacked" className="mb-4" iconClassName="h-14 w-[4.5rem]" wordmarkClassName="text-3xl" />
             <p className="text-navy-300 text-sm">Loading...</p>
           </motion.div>
         )}

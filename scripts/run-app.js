@@ -1,4 +1,4 @@
-const { spawn, execSync } = require("child_process");
+const { spawn, execFileSync, execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
@@ -45,7 +45,10 @@ function getWindowsPostgresServices() {
       "Get-CimInstance Win32_Service | Where-Object { $_.Name -like 'postgresql*' } | Select-Object -ExpandProperty Name",
       { encoding: "utf8", stdio: "pipe", shell: "powershell.exe" },
     );
-    return output.split(/\r?\n/).map((name) => name.trim()).filter(Boolean);
+    return output
+      .split(/\r?\n/)
+      .map((name) => name.trim())
+      .filter(Boolean);
   } catch {
     return [];
   }
@@ -68,12 +71,16 @@ function getConfiguredDatabaseUrl() {
 }
 
 function databaseUrlForPort(port) {
-  return getConfiguredDatabaseUrl().replace(/:\/\/([^/:]+)(?::\d+)?\//, `://$1:${port}/`);
+  return getConfiguredDatabaseUrl().replace(
+    /:\/\/([^/:]+)(?::\d+)?\//,
+    `://$1:${port}/`,
+  );
 }
 
 function runPowerShell(script, options = {}) {
-  return execSync(
-    `powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "${script.replace(/"/g, '`"')}"`,
+  return execFileSync(
+    "powershell.exe",
+    ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script],
     { encoding: "utf8", stdio: "pipe", ...options },
   );
 }
@@ -86,7 +93,9 @@ function stopProjectDevServers() {
     const output = runPowerShell(script);
     if (output.trim()) process.stdout.write(output);
   } catch {
-    console.warn("Could not inspect old project dev servers; Prisma generation will still retry if a file lock occurs.");
+    console.warn(
+      "Could not inspect old project dev servers; Prisma generation will still retry if a file lock occurs.",
+    );
   }
 }
 
@@ -108,7 +117,9 @@ async function generatePrismaClient(dbUrl) {
         );
       }
 
-      console.warn(`Prisma generation attempt ${attempt} failed. Retrying in ${attempt * 2} seconds...`);
+      console.warn(
+        `Prisma generation attempt ${attempt} failed. Retrying in ${attempt * 2} seconds...`,
+      );
       await delay(attempt * 2000);
     }
   }
@@ -130,16 +141,22 @@ function getLocalPostgresService() {
 }
 
 async function startLocalPostgres(service) {
-  console.log(`Docker is not running. Using local PostgreSQL service ${service.name} on port ${service.port}.`);
+  console.log(
+    `Docker is not running. Using local PostgreSQL service ${service.name} on port ${service.port}.`,
+  );
   let status;
   try {
-    status = runPowerShell(`(Get-Service -Name '${service.name}').Status`).trim();
+    status = runPowerShell(
+      `(Get-Service -Name '${service.name}').Status`,
+    ).trim();
   } catch {
     throw new Error(`Could not read local PostgreSQL service ${service.name}.`);
   }
 
   if (status !== "Running") {
-    console.log("Requesting Windows approval to start the local PostgreSQL service...");
+    console.log(
+      "Requesting Windows approval to start the local PostgreSQL service...",
+    );
     const script = `Start-Service -Name '${service.name}'`;
     const encoded = Buffer.from(script, "utf16le").toString("base64");
     execSync(
@@ -158,22 +175,29 @@ async function startLocalPostgres(service) {
     await delay(1000);
   }
 
-  throw new Error(`Local PostgreSQL did not become ready on port ${service.port}.`);
+  throw new Error(
+    `Local PostgreSQL did not become ready on port ${service.port}.`,
+  );
 }
 
 async function setupDatabase() {
   let dbUrl;
-  const localService = process.platform === "win32" ? getLocalPostgresService() : null;
+  const localService =
+    process.platform === "win32" ? getLocalPostgresService() : null;
 
   if (isDockerDaemonReady() && fs.existsSync(dockerComposePath)) {
-    console.log("Docker Desktop is running. Starting PostgreSQL with Docker Compose...");
+    console.log(
+      "Docker Desktop is running. Starting PostgreSQL with Docker Compose...",
+    );
     await run("docker compose up -d db");
     dbUrl = databaseUrlForPort(5433);
   } else if (localService) {
     await startLocalPostgres(localService);
     dbUrl = databaseUrlForPort(localService.port);
   } else {
-    throw new Error("Docker is not running and no local PostgreSQL service was found. Start Docker Desktop, or install PostgreSQL so this runner can use the local service fallback.");
+    throw new Error(
+      "Docker is not running and no local PostgreSQL service was found. Start Docker Desktop, or install PostgreSQL so this runner can use the local service fallback.",
+    );
   }
 
   console.log("Preparing Prisma database...");

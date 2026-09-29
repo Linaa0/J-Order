@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Home, Package, PlusCircle, LayoutDashboard, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { FlameIcon } from '@/components/icons/ProductIcons'
+import { GearLogo } from '@/components/branding/GearLogo'
 import { motion } from 'framer-motion'
 
 interface AppShellProps {
@@ -43,9 +43,8 @@ export function AppShell({ children }: AppShellProps) {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="sticky top-0 z-40 bg-navy-900 text-white shadow-navy">
         <div className="mx-auto max-w-screen-xl px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-display font-bold text-xl">
-            <FlameIcon size={28} className="animate-flame-flicker" />
-            <span>J Order</span>
+          <Link href="/" className="flex items-center" aria-label="J Order home">
+            <GearLogo dark iconClassName="h-8 w-11" wordmarkClassName="text-xl" />
           </Link>
           {session?.user?.name && (
             <span className="text-sm text-navy-300 hidden sm:block">

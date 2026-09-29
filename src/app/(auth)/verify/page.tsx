@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { FlameIcon } from '@/components/icons/ProductIcons'
+import { GearLogo } from '@/components/branding/GearLogo'
 import { resolveAuthContact } from '@/lib/contact'
 import { toast } from 'sonner'
 
@@ -120,7 +120,7 @@ export default function VerifyPage() {
         </button>
 
         <div className="text-center mb-8">
-          <FlameIcon size={48} className="mx-auto mb-4" />
+          <GearLogo dark className="mx-auto mb-4" iconClassName="h-10 w-14" wordmarkClassName="text-2xl" />
           <h1 className="font-display text-3xl font-bold text-white mb-2">Enter Verification Code</h1>
           <p className="text-navy-300 text-sm">
             We sent a 6 digit code to{' '}

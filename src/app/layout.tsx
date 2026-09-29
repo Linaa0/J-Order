@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   title: 'J Order | Gas Engineering and Services',
   description: 'Order and track gas cylinders and refills from GES in Kigali, Rwanda',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.png',
+    apple: '/icons/icon-180x180.png',
+  },
   applicationName: 'J Order',
   keywords: ['gas', 'LPG', 'cylinder', 'kigali', 'rwanda', 'delivery'],
   authors: [{ name: 'Gas Engineering and Services Ltd' }],

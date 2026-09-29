@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { Wordmark } from './Wordmark'
+import { GearLogo } from './GearLogo'
 
 interface BrandLoadingProps {
   className?: string
@@ -18,18 +18,13 @@ export function BrandLoading({ className, inline = false }: BrandLoadingProps) {
         className
       )}
     >
-      <div className="relative flex items-center justify-center">
-        <motion.div
-          className="absolute h-16 w-16 rounded-full bg-ember-400/25 blur-2xl"
-          animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.35, 0.7, 0.35] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="relative h-8 w-8 rounded-full bg-ember-gradient shadow-ember"
-          animate={{ scale: [0.9, 1.1, 0.9], opacity: [0.8, 1, 0.8] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </div>
+      <GearLogo
+        animated
+        dark={!inline}
+        layout="stacked"
+        iconClassName={inline ? 'h-10 w-14' : 'h-14 w-[4.5rem]'}
+        wordmarkClassName={inline ? 'text-2xl' : 'text-4xl'}
+      />
 
       <div className="relative overflow-hidden rounded-full px-2 py-1">
         <motion.div
@@ -37,7 +32,6 @@ export function BrandLoading({ className, inline = false }: BrandLoadingProps) {
           animate={{ x: ['0%', '170%'] }}
           transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
         />
-        <Wordmark dark={!inline} className={inline ? 'justify-center text-navy-900' : 'justify-center'} compact={inline} />
       </div>
 
       <motion.div
