@@ -41,7 +41,7 @@ function Gear({
   }
 
   return (
-    <g className={animate ? 'gear-logo__spin' : undefined} style={{ transformOrigin: `${x}px ${y}px`, animationDuration: `${duration}s`, animationDirection: reverse ? 'reverse' : 'normal' }}>
+    <g className={animate ? 'gear-logo__spin' : undefined} style={{ transformBox: 'view-box', transformOrigin: `${x}px ${y}px`, animationDuration: `${duration}s`, animationDirection: reverse ? 'reverse' : 'normal' }}>
       <polygon points={points.join(' ')} fill="none" stroke={color} strokeWidth="2.4" strokeLinejoin="round" />
       <circle cx={x} cy={y} r={radius * 0.55} fill="none" stroke={color} strokeWidth="2.2" />
       <circle cx={x} cy={y} r="1.7" fill={color} />
@@ -60,7 +60,6 @@ export function GearLogo({
 }: GearLogoProps) {
   const id = useId().replace(/:/g, '')
   const primary = dark ? '#f8fafc' : '#0b1b3a'
-  const accent = '#f59e0b'
   const stacked = layout === 'stacked'
 
   return (
@@ -102,7 +101,7 @@ export function GearLogo({
           <span className="text-ember-500">J</span> Order
         </span>
       )}
-      <style jsx>{`
+      <style jsx global>{`
         .gear-logo__spin {
           animation-name: gear-turn;
           animation-timing-function: linear;

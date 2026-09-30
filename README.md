@@ -37,39 +37,23 @@ Built with Next.js 14 App Router, TypeScript, Tailwind CSS, PostgreSQL, and Pris
 ### Prerequisites
 
 - Node.js 18 or later
-- PostgreSQL database
+- Docker Desktop with Linux containers, or PostgreSQL installed as a Windows service
 - Africa's Talking account (for SMS and USSD)
 - Firebase project (for push notifications)
 
 ### Setup
 
-1. Clone and install dependencies
+1. Install dependencies
 
    npm install
 
-2. Copy environment variables
+2. Set provider credentials in .env.local when enabling live OTP delivery
 
-   copy .env.example .env.local
+3. Start the database, prepare Prisma, and launch the app in one command
 
-3. Fill in all required environment variables in .env.local
+  npm run app:run
 
-4. Generate Prisma client
-
-   npm run db:generate
-
-5. Run database migrations
-
-   npm run db:migrate
-
-6. Seed the database with sample data
-
-   npm run db:seed
-
-7. Start the development server
-
-   npm run dev
-
-The app runs at http://localhost:3000
+The runner uses Docker Compose when the Docker daemon is running. Otherwise, on Windows it starts an installed PostgreSQL service. If Windows requests administrator approval to start that service, approve the prompt. The app runs at http://localhost:3000 unless that port is already occupied.
 
 ## Required Environment Variables
 

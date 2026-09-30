@@ -71,10 +71,9 @@ function getConfiguredDatabaseUrl() {
 }
 
 function databaseUrlForPort(port) {
-  return getConfiguredDatabaseUrl().replace(
-    /:\/\/([^/:]+)(?::\d+)?\//,
-    `://$1:${port}/`,
-  );
+  const url = new URL(getConfiguredDatabaseUrl());
+  url.port = String(port);
+  return url.toString();
 }
 
 function runPowerShell(script, options = {}) {
@@ -88,7 +87,7 @@ function runPowerShell(script, options = {}) {
 function stopProjectDevServers() {
   if (process.platform !== "win32") return;
 
-  const script = `$root='${projectPathForPowerShell}'; $self=${process.pid}; Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne $self -and $_.Name -match '^node(\.exe)?$' -and $_.CommandLine -like "*$root*" -and $_.CommandLine -match 'next(\\.exe)? (dev|start)|next-server' } | ForEach-Object { Write-Output "Stopping previous J Order Next.js process $($_.ProcessId)"; Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
+  const script = `$root='${projectPathForPowerShell}'; $self=${process.pid}; $processes=Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne $self -and $_.Name -match '^node(\.exe)?$' -and $_.CommandLine -like "*$root*" -and $_.CommandLine -match 'next|prisma' }; foreach ($process in $processes) { Write-Output "Stopping previous J Order Node process $($process.ProcessId)"; Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue }`;
   try {
     const output = runPowerShell(script);
     if (output.trim()) process.stdout.write(output);
@@ -97,6 +96,36 @@ function stopProjectDevServers() {
       "Could not inspect old project dev servers; Prisma generation will still retry if a file lock occurs.",
     );
   }
+}
+
+function clearNextBuildArtifacts() {
+  const nextOutput = path.join(projectRoot, ".next");
+  if (fs.existsSync(path.join(nextOutput, "BUILD_ID"))) {
+    fs.rmSync(nextOutput, { recursive: true, force: true });
+    console.log("Cleared production build output before starting the dev server.");
+  }
+}
+
+function startNextDev(dbUrl) {
+  const nextCli = require.resolve("next/dist/bin/next");
+  const child = spawn(process.execPath, [nextCli, "dev"], {
+    cwd: projectRoot,
+    env: { ...process.env, DATABASE_URL: dbUrl },
+    stdio: "inherit",
+    windowsHide: false,
+  });
+
+  return new Promise((resolve, reject) => {
+    child.once("error", reject);
+    child.once("exit", (code, signal) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        const exitDetail = signal ? `signal ${signal}` : `exit code ${code}`;
+        reject(new Error(`Next.js dev server stopped with ${exitDetail}.`));
+      }
+    });
+  });
 }
 
 function delay(milliseconds) {
@@ -213,8 +242,10 @@ async function main() {
     const dbUrl = await setupDatabase();
 
     if (mode === "full") {
-      console.log("Starting Next.js app...");
-      await run("npm run dev", { DATABASE_URL: dbUrl });
+      stopProjectDevServers();
+      clearNextBuildArtifacts();
+      console.log("Starting Next.js directly (without the npm shell wrapper)...");
+      await startNextDev(dbUrl);
       return;
     }
 

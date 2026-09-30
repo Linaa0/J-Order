@@ -11,7 +11,11 @@ export const metadata: Metadata = {
   description: 'Order and track gas cylinders and refills from GES in Kigali, Rwanda',
   manifest: '/manifest.json',
   icons: {
-    icon: '/favicon.png',
+    icon: [
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+    ],
     apple: '/icons/icon-180x180.png',
   },
   applicationName: 'J Order',
