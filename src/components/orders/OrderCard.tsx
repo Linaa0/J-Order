@@ -42,11 +42,17 @@ export function OrderCard({ order, compact, onClick }: OrderCardProps) {
                     )}
                   </p>
                   <p className="text-xs text-navy-400 font-mono">{order.orderNumber}</p>
+                  <p className="mt-1 text-xs text-navy-500">Purchase code {order.purchaseCode}</p>
                 </div>
                 <StatusBadge status={order.status} />
               </div>
               {!compact && (
                 <div className="space-y-1 mt-2">
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <span className={`rounded-full px-2 py-0.5 font-medium ${order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{order.paymentStatus === 'PAID' ? 'Paid' : 'Not paid'}</span>
+                    {order.group && <span className="rounded-full bg-ember-50 px-2 py-0.5 font-medium text-ember-800">{order.group.type === 'CUSTOMER_GROUP' ? 'Grouped order' : 'Consolidated delivery'} · {order.group.reference}</span>}
+                    {order.tinNumber && <span className="text-navy-500">TIN {order.tinNumber}</span>}
+                  </div>
                   <div className="flex items-center gap-1.5 text-xs text-navy-500">
                     <MapPin size={12} />
                     <span className="truncate">{order.deliveryAddress}</span>
