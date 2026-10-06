@@ -19,10 +19,11 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
-      name: 'Email or Phone OTP',
+      name: 'Email or Phone',
       credentials: {
         contact: { label: 'Email or Phone', type: 'text' },
         otp: { label: 'OTP', type: 'text' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         const parsed = loginSchema.safeParse(credentials)

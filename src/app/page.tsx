@@ -21,32 +21,28 @@ function getRedirectPath(role: string | undefined) {
 export default function HomePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const redirectAttemptedRef = useRef(false)
 
-  const [showSplash, setShowSplash]         = useState(true)
-  const [showLanguage, setShowLanguage]     = useState(false)
-  const [langChosen, setLangChosen]         = useState(false)
-  const [selectedLang, setSelectedLang]     = useState<string | null>(null)
+  const [showSplash, setShowSplash] = useState(true)
+  const [showLanguage, setShowLanguage] = useState(false)
+  const [langChosen, setLangChosen] = useState(false)
+  const [selectedLang, setSelectedLang] = useState<string | null>(null)
 
-  // Step 1: after 2 s dismiss splash, decide whether to show language picker
   useEffect(() => {
-    const t = setTimeout(() => {
-      setShowSplash(false)
-      const saved = localStorage.getItem('jorder_lang')
-      if (!saved) {
-        setShowLanguage(true)
-      } else {
-        setLangChosen(true)   // already picked before, go straight to redirect
-      }
-    }, 2000)
-    return () => clearTimeout(t)
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('jorder_lang') : null
+
+    setShowSplash(false)
+
+    if (saved) {
+      setSelectedLang(saved)
+      setLangChosen(true)
+      return
+    }
+
+    setShowLanguage(true)
   }, [])
 
-  // Step 2: redirect once session is resolved AND language is chosen
   useEffect(() => {
-    if (!langChosen || status === 'loading' || redirectAttemptedRef.current) return
-
-    redirectAttemptedRef.current = true
+    if (status === 'loading' || !langChosen) return
 
     if (session?.user) {
       router.replace(getRedirectPath(session.user.role))
@@ -61,7 +57,7 @@ export default function HomePage() {
     document.cookie = `NEXT_LOCALE=${code}; path=/; max-age=31536000`
     setSelectedLang(code)
     setShowLanguage(false)
-    setLangChosen(true)   // triggers the effect above
+    setLangChosen(true)
   }
 
   return (

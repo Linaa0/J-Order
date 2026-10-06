@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -15,8 +16,17 @@ export function AppShell({ children }: AppShellProps) {
   const { data: session } = useSession()
   const pathname = usePathname()
   const role = session?.user?.role
+  const [language, setLanguage] = useState('en')
+
+  useEffect(() => {
+    const nextLanguage = session?.user?.preferredLanguage || localStorage.getItem('jorder_lang') || 'en'
+    setLanguage(nextLanguage)
+    document.cookie = `NEXT_LOCALE=${nextLanguage}; path=/; max-age=31536000`
+    localStorage.setItem('jorder_lang', nextLanguage)
+  }, [session?.user?.preferredLanguage])
 
   async function handleLanguageChange(code: string) {
+    setLanguage(code)
     document.cookie = `NEXT_LOCALE=${code}; path=/; max-age=31536000`
     localStorage.setItem('jorder_lang', code)
 
@@ -69,7 +79,7 @@ export function AppShell({ children }: AppShellProps) {
               <span>Lang</span>
               <select
                 aria-label="Language selector"
-                value={session?.user?.preferredLanguage ?? 'en'}
+                value={language}
                 onChange={(event) => { void handleLanguageChange(event.target.value) }}
                 className="bg-transparent text-white outline-none"
               >
