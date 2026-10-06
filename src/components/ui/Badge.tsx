@@ -3,6 +3,7 @@ import { OrderStatus } from '@prisma/client'
 
 const statusStyles: Record<OrderStatus, string> = {
   PENDING: 'bg-amber-100 text-amber-800 border border-amber-200',
+  AWAITING_CONSOLIDATION: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
   CONFIRMED: 'bg-blue-100 text-blue-800 border border-blue-200',
   PROCESSING: 'bg-purple-100 text-purple-800 border border-purple-200',
   OUT_FOR_DELIVERY: 'bg-orange-100 text-orange-800 border border-orange-200',
@@ -13,6 +14,7 @@ const statusStyles: Record<OrderStatus, string> = {
 
 const statusLabels: Record<OrderStatus, string> = {
   PENDING: 'Pending',
+  AWAITING_CONSOLIDATION: 'Awaiting Consolidation',
   CONFIRMED: 'Confirmed',
   PROCESSING: 'Processing',
   OUT_FOR_DELIVERY: 'Out for Delivery',

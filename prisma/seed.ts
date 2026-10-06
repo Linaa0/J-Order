@@ -1,4 +1,5 @@
 import { PrismaClient, UserRole, ProductCategory, OrderStatus } from '@prisma/client'
+import { randomBytes } from 'crypto'
 
 const prisma = new PrismaClient()
 
@@ -104,6 +105,7 @@ async function main() {
   const order1 = await prisma.order.create({
     data: {
       orderNumber: `GES-${Date.now()}-001`,
+      purchaseCode: randomBytes(4).toString('hex').toUpperCase(),
       clientId: client1.id,
       status: OrderStatus.CONFIRMED,
       deliveryAddress: 'KG 15 Ave, Kacyiru, Kigali',
@@ -136,6 +138,7 @@ async function main() {
   const order2 = await prisma.order.create({
     data: {
       orderNumber: `GES-${Date.now()}-002`,
+      purchaseCode: randomBytes(4).toString('hex').toUpperCase(),
       clientId: client2.id,
       status: OrderStatus.PENDING,
       deliveryAddress: 'KN 3 Rd, Nyarugenge, Kigali',
@@ -162,6 +165,7 @@ async function main() {
   const order3 = await prisma.order.create({
     data: {
       orderNumber: `GES-${Date.now()}-003`,
+      purchaseCode: randomBytes(4).toString('hex').toUpperCase(),
       clientId: client1.id,
       status: OrderStatus.OUT_FOR_DELIVERY,
       deliveryAddress: 'KG 15 Ave, Kacyiru, Kigali',

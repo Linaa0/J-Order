@@ -103,15 +103,15 @@ model StaffProductCategory {
 }
 
 model Order {
-  id                 String      @id @default(cuid())
-  orderNumber        String      @unique
-  purchaseCode       String      @unique @map("purchase_code")
+  id                 String         @id @default(cuid())
+  orderNumber        String         @unique
+  purchaseCode       String         @unique @map("purchase_code")
   clientId           String
   assignedToId       String?
-  status             OrderStatus @default(PENDING)
-  paymentStatus      PaymentStatus @default(NOT_PAID) @map("payment_status")
-  tinNumber          String?     @map("tin_number")
-  groupId            String?     @map("group_order_id")
+  status             OrderStatus    @default(PENDING)
+  paymentStatus      PaymentStatus  @default(NOT_PAID) @map("payment_status")
+  tinNumber          String?        @map("tin_number")
+  groupId            String?        @map("group_order_id")
   truckCapacity      TruckCapacity? @map("truck_capacity")
   notes              String?
   deliveryAddress    String
@@ -120,11 +120,11 @@ model Order {
   preferredDate      DateTime
   preferredTime      String
   cancellationReason String?
-  isGuestOrder       Boolean     @default(false)
+  isGuestOrder       Boolean        @default(false)
   guestPhone         String?
   syncedAt           DateTime?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 
   client        User                 @relation("ClientOrders", fields: [clientId], references: [id])
   assignedTo    User?                @relation("AssignedOrders", fields: [assignedToId], references: [id])
@@ -141,13 +141,13 @@ model Order {
 }
 
 model OrderGroup {
-  id             String         @id @default(cuid())
-  reference      String         @unique
-  type           OrderGroupType
-  truckCapacity  TruckCapacity? @map("truck_capacity")
-  dispatchedAt   DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id            String         @id @default(cuid())
+  reference     String         @unique
+  type          OrderGroupType
+  truckCapacity TruckCapacity? @map("truck_capacity")
+  dispatchedAt  DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   orders Order[]
 
@@ -169,12 +169,12 @@ model AppSetting {
 }
 
 model DailyOrderSummary {
-  id               String   @id @default(cuid())
-  summaryDate      DateTime @unique @map("summary_date") @db.Date
+  id               String    @id @default(cuid())
+  summaryDate      DateTime  @unique @map("summary_date") @db.Date
   payload          Json
   emailAttemptedAt DateTime? @map("email_attempted_at")
   smsAttemptedAt   DateTime? @map("sms_attempted_at")
-  createdAt        DateTime @default(now())
+  createdAt        DateTime  @default(now())
 
   @@index([summaryDate])
   @@map("daily_order_summaries")

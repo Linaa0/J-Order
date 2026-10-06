@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { generateOrderNumber, sanitizePhone } from '@/lib/utils'
+import { generateOrderNumber, generatePurchaseCode, sanitizePhone } from '@/lib/utils'
 import { OrderStatus, UserRole } from '@prisma/client'
 
 const sessions: Map<string, { step: number; data: Record<string, string> }> = new Map()
@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
         const order = await prisma.order.create({
           data: {
             orderNumber: generateOrderNumber(),
+            purchaseCode: generatePurchaseCode(),
             clientId: user.id,
             isGuestOrder: true,
             guestPhone: phone,
