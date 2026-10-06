@@ -35,7 +35,9 @@ export async function GET(req: NextRequest) {
     try {
       const africastalking = (await import('africastalking')).default
       const at = africastalking({ apiKey: process.env.AT_API_KEY, username: process.env.AT_USERNAME })
-      const response = await at.SMS.send({ to: [settings.adminPhone], message: `J Order: ${summary.totalOrders} orders. Paid ${summary.paidOrders}. Not paid ${summary.unpaidOrders}.`, from: process.env.AT_SENDER_ID })
+      const response = await at.SMS.send({ to: [settings.adminPhone], message: `J Order: ${summary.totalOrders} orders. Paid ${summary.paidOrders}. Not paid ${summary.unpaidOrders}.`, from: process.env.AT_SENDER_ID }) as {
+        SMSMessageData?: { Recipients?: Array<{ statusCode?: number }> }
+      }
       const recipients = response.SMSMessageData?.Recipients ?? []
       if (!recipients.length || recipients.some((recipient) => recipient.statusCode !== 101)) throw new Error('SMS provider did not accept the summary')
       await prisma.dailyOrderSummary.update({ where: { summaryDate: summary.summaryDate }, data: { smsAttemptedAt: new Date() } })

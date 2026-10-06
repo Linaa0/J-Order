@@ -10,7 +10,18 @@ export interface ApiResponse<T = unknown> {
 export interface OrderWithDetails {
   id: string
   orderNumber: string
+  purchaseCode: string
   status: import('@prisma/client').OrderStatus
+  paymentStatus: import('@prisma/client').PaymentStatus
+  tinNumber: string | null
+  truckCapacity: import('@prisma/client').TruckCapacity | null
+  groupId: string | null
+  group?: {
+    id: string
+    reference: string
+    type: import('@prisma/client').OrderGroupType
+    truckCapacity: import('@prisma/client').TruckCapacity | null
+  } | null
   deliveryAddress: string
   deliveryLat: number | null
   deliveryLng: number | null

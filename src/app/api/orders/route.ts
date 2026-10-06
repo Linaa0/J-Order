@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { generateOrderNumber, generatePurchaseCode } from '@/lib/utils'
 import { z } from 'zod'
 import { OrderStatus, UserRole } from '@prisma/client'
+import { calculateOrderWeight } from '@/lib/order-operations'
 
 const orderSchema = z.object({
   items: z.array(
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = parsed.data
+    const settings = await prisma.appSetting.upsert({ where: { id: 1 }, create: { id: 1 }, update: {} })
     let clientId: string
     let isGuestOrder = false
 
@@ -93,7 +95,10 @@ export async function POST(req: NextRequest) {
       notes: line.notes,
       syncedAt: new Date(),
       items: { create: line.items.map((item) => ({ product: item.product as 'GAS_REFILL' | 'CYLINDER_6KG' | 'CYLINDER_12KG' | 'CYLINDER_20KG' | 'CYLINDER_38KG', quantity: item.quantity })) },
-      statusHistory: { create: { changedBy: clientId, newStatus: OrderStatus.PENDING } },
+      status: data.orderMode !== 'GROUPED' && calculateOrderWeight(line.items as Array<{ product: 'GAS_REFILL' | 'CYLINDER_6KG' | 'CYLINDER_12KG' | 'CYLINDER_20KG' | 'CYLINDER_38KG'; quantity: number }>) < settings.consolidationSizeKg
+        ? OrderStatus.AWAITING_CONSOLIDATION
+        : OrderStatus.PENDING,
+      statusHistory: { create: { changedBy: clientId, newStatus: data.orderMode !== 'GROUPED' && calculateOrderWeight(line.items as Array<{ product: 'GAS_REFILL' | 'CYLINDER_6KG' | 'CYLINDER_12KG' | 'CYLINDER_20KG' | 'CYLINDER_38KG'; quantity: number }>) < settings.consolidationSizeKg ? OrderStatus.AWAITING_CONSOLIDATION : OrderStatus.PENDING } },
     })
 
     if (data.orderMode === 'GROUPED') {

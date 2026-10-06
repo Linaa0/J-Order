@@ -11,6 +11,7 @@ import { OrderCardSkeleton } from '@/components/ui/Skeleton'
 import { getProductIcon } from '@/components/icons/ProductIcons'
 import { PRODUCT_LABELS, ORDER_STATUS_LABELS, canTransitionTo } from '@/lib/order-utils'
 import { formatDate, formatDateTime } from '@/lib/utils'
+import { calculateOrderWeight, suggestTruckCapacity, TRUCK_CAPACITY_KG } from '@/lib/order-operations'
 import type { OrderWithDetails } from '@/types'
 import { OrderStatus } from '@prisma/client'
 import { toast } from 'sonner'
@@ -29,6 +30,7 @@ export default function StaffDashboardPage() {
   const [updating, setUpdating] = useState(false)
   const [newStatus, setNewStatus] = useState('')
   const [cancelReason, setCancelReason] = useState('')
+  const [truckCapacity, setTruckCapacity] = useState('')
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
@@ -65,6 +67,7 @@ export default function StaffDashboardPage() {
         body: JSON.stringify({
           status: newStatus,
           reason: newStatus === 'CANCELLED' ? cancelReason : undefined,
+          truckCapacity: newStatus === 'OUT_FOR_DELIVERY' ? truckCapacity : undefined,
         }),
       })
       if (!res.ok) {
@@ -76,6 +79,7 @@ export default function StaffDashboardPage() {
       setSelectedOrder(null)
       setNewStatus('')
       setCancelReason('')
+      setTruckCapacity('')
       fetchOrders()
     } finally {
       setUpdating(false)
@@ -208,6 +212,17 @@ export default function StaffDashboardPage() {
                 />
               )}
 
+              {newStatus === 'OUT_FOR_DELIVERY' && (
+                <div>
+                  <p className="text-sm font-medium">Estimated load {calculateOrderWeight(selectedOrder.items)} kg</p>
+                  <p className="mt-1 text-xs text-navy-500">Suggested truck {suggestTruckCapacity(calculateOrderWeight(selectedOrder.items))?.replaceAll('_', ' ') ?? 'Above available capacity'}</p>
+                  <select value={truckCapacity || selectedOrder.truckCapacity || suggestTruckCapacity(calculateOrderWeight(selectedOrder.items)) || ''} onChange={(event) => setTruckCapacity(event.target.value)} className="mt-3 h-10 w-full rounded-lg border border-navy-200 bg-white px-3 text-sm">
+                    <option value="">Choose truck capacity</option>
+                    {Object.entries(TRUCK_CAPACITY_KG).map(([capacity, kg]) => <option key={capacity} value={capacity}>{capacity.replaceAll('_', ' ')} · {kg} kg</option>)}
+                  </select>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => { setSelectedOrder(null); setNewStatus(''); setCancelReason('') }}>
                   Close
@@ -215,7 +230,7 @@ export default function StaffDashboardPage() {
                 <Button
                   className="flex-1"
                   loading={updating}
-                  disabled={!newStatus || (newStatus === 'CANCELLED' && !cancelReason.trim())}
+                  disabled={!newStatus || (newStatus === 'CANCELLED' && !cancelReason.trim()) || (newStatus === 'OUT_FOR_DELIVERY' && !(truckCapacity || selectedOrder.truckCapacity || suggestTruckCapacity(calculateOrderWeight(selectedOrder.items))))}
                   onClick={updateOrderStatus}
                 >
                   Update

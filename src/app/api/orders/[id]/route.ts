@@ -5,11 +5,13 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { canTransitionTo } from '@/lib/order-utils'
 import { OrderStatus } from '@prisma/client'
+import { calculateOrderWeight, suggestTruckCapacity, TRUCK_CAPACITY_KG } from '@/lib/order-operations'
 
 const statusUpdateSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'COMPLETED', 'CANCELLED']),
   reason: z.string().max(500).optional(),
   assignedToId: z.string().optional(),
+  truckCapacity: z.enum(['TWO_TONNES', 'THREE_AND_HALF_TONNES', 'FOUR_AND_HALF_TONNES']).optional(),
 })
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -74,12 +76,24 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: 'Invalid data', details: parsed.error.flatten() }, { status: 400 })
     }
 
-    const order = await prisma.order.findUnique({ where: { id: params.id } })
+    const order = await prisma.order.findUnique({ where: { id: params.id }, include: { items: true } })
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    const { status, reason, assignedToId } = parsed.data
+    const { status, reason, assignedToId, truckCapacity } = parsed.data
+
+    if (truckCapacity) {
+      const weightKg = calculateOrderWeight(order.items)
+      if (weightKg > TRUCK_CAPACITY_KG[truckCapacity]) {
+        return NextResponse.json({ error: 'Selected truck capacity is below the estimated order weight' }, { status: 422 })
+      }
+      if (status === 'OUT_FOR_DELIVERY' && !suggestTruckCapacity(weightKg)) {
+        return NextResponse.json({ error: 'Order exceeds the largest available truck capacity' }, { status: 422 })
+      }
+    } else if (status === 'OUT_FOR_DELIVERY' && !order.truckCapacity) {
+      return NextResponse.json({ error: 'Select a truck capacity before dispatch' }, { status: 400 })
+    }
 
     if (!canTransitionTo(order.status, status as OrderStatus)) {
       return NextResponse.json(
@@ -99,6 +113,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           status: status as OrderStatus,
           ...(reason ? { cancellationReason: reason } : {}),
           ...(assignedToId ? { assignedToId } : {}),
+          ...(truckCapacity ? { truckCapacity } : {}),
         },
         include: {
           items: true,

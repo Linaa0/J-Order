@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { OrderCardSkeleton } from '@/components/ui/Skeleton'
 import { PRODUCT_LABELS } from '@/lib/order-utils'
 import { toast } from 'sonner'
+import { AdminOrdersPanel, ConsolidationPanel } from '@/components/admin/AdminOperations'
 
 interface Analytics {
   totalOrders: number
@@ -41,7 +42,7 @@ export default function AdminDashboardPage() {
   const [showAddStaff, setShowAddStaff] = useState(false)
   const [newStaff, setNewStaff] = useState({ phone: '', name: '', role: 'ORDER_STAFF', categories: [] as string[] })
   const [addingStaff, setAddingStaff] = useState(false)
-  const [activeTab, setActiveTab] = useState<'analytics' | 'staff'>('analytics')
+  const [activeTab, setActiveTab] = useState<'orders' | 'consolidation' | 'analytics' | 'staff'>('orders')
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true)
@@ -138,6 +139,18 @@ export default function AdminDashboardPage() {
 
       <div className="flex gap-2">
         <button
+          onClick={() => setActiveTab('orders')}
+          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'orders' ? 'bg-navy-900 text-white' : 'bg-navy-50 text-navy-600 hover:bg-navy-100'}`}
+        >
+          Orders
+        </button>
+        <button
+          onClick={() => setActiveTab('consolidation')}
+          className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'consolidation' ? 'bg-navy-900 text-white' : 'bg-navy-50 text-navy-600 hover:bg-navy-100'}`}
+        >
+          Consolidation
+        </button>
+        <button
           onClick={() => setActiveTab('analytics')}
           className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'analytics' ? 'bg-navy-900 text-white' : 'bg-navy-50 text-navy-600 hover:bg-navy-100'}`}
         >
@@ -150,6 +163,10 @@ export default function AdminDashboardPage() {
           Staff Accounts
         </button>
       </div>
+
+      {activeTab === 'orders' && <AdminOrdersPanel />}
+
+      {activeTab === 'consolidation' && <ConsolidationPanel />}
 
       {activeTab === 'analytics' && analytics && (
         <div className="space-y-4">
