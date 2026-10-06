@@ -1,7 +1,10 @@
 import { PrismaClient, UserRole, ProductCategory, OrderStatus } from '@prisma/client'
 import { randomBytes } from 'crypto'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
+const ADMIN_EMAIL = 'ishimwelina06@gmail.com'
+const ADMIN_PASSWORD = 'JOrder@2026'
 
 function makeOrderNum(suffix: string): string {
   return `GES${Date.now().toString(36).toUpperCase()}${suffix}`
@@ -11,13 +14,20 @@ async function main() {
   console.log('Seeding database...')
 
   // Admin user
+  const adminPasswordHash = await bcrypt.hash(ADMIN_PASSWORD, 12)
   const admin = await prisma.user.upsert({
     where: { phone: '+250780000001' },
-    update: {},
+    update: {
+      email: ADMIN_EMAIL,
+      passwordHash: adminPasswordHash,
+      role: UserRole.ADMIN,
+      isActive: true,
+    },
     create: {
       phone: '+250780000001',
       name: 'Admin GES',
-      email: 'admin@ges.rw',
+      email: ADMIN_EMAIL,
+      passwordHash: adminPasswordHash,
       role: UserRole.ADMIN,
       preferredLanguage: 'en',
       isActive: true,

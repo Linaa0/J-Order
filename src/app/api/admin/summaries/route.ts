@@ -21,25 +21,32 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (session?.user?.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
   const body = await req.json()
+  const current = await prisma.appSetting.upsert({
+    where: { id: 1 },
+    create: { id: 1 },
+    update: {},
+  })
+
   const settings = await prisma.appSetting.upsert({
     where: { id: 1 },
     create: {
       id: 1,
-      consolidationSizeKg: body.consolidationSizeKg,
-      maxConsolidationDistanceKm: body.maxConsolidationDistanceKm,
-      maxConsolidationWaitHours: body.maxConsolidationWaitHours,
-      dailySummaryHour: body.dailySummaryHour,
-      adminEmail: body.adminEmail || null,
-      adminPhone: body.adminPhone || null,
+      consolidationSizeKg: Number(body.consolidationSizeKg ?? current.consolidationSizeKg),
+      maxConsolidationDistanceKm: Number(body.maxConsolidationDistanceKm ?? current.maxConsolidationDistanceKm),
+      maxConsolidationWaitHours: Number(body.maxConsolidationWaitHours ?? current.maxConsolidationWaitHours),
+      dailySummaryHour: Number(body.dailySummaryHour ?? current.dailySummaryHour),
+      adminEmail: body.adminEmail ?? current.adminEmail ?? null,
+      adminPhone: body.adminPhone ?? current.adminPhone ?? null,
     },
     update: {
-      consolidationSizeKg: body.consolidationSizeKg,
-      maxConsolidationDistanceKm: body.maxConsolidationDistanceKm,
-      maxConsolidationWaitHours: body.maxConsolidationWaitHours,
-      dailySummaryHour: body.dailySummaryHour,
-      adminEmail: body.adminEmail || null,
-      adminPhone: body.adminPhone || null,
+      consolidationSizeKg: Number(body.consolidationSizeKg ?? current.consolidationSizeKg),
+      maxConsolidationDistanceKm: Number(body.maxConsolidationDistanceKm ?? current.maxConsolidationDistanceKm),
+      maxConsolidationWaitHours: Number(body.maxConsolidationWaitHours ?? current.maxConsolidationWaitHours),
+      dailySummaryHour: Number(body.dailySummaryHour ?? current.dailySummaryHour),
+      adminEmail: body.adminEmail ?? current.adminEmail ?? null,
+      adminPhone: body.adminPhone ?? current.adminPhone ?? null,
     },
   })
   return NextResponse.json({ data: settings })

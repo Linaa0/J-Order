@@ -60,6 +60,7 @@ model User {
   phone             String?  @unique
   name              String?
   email             String?  @unique
+  passwordHash      String?  @map("password_hash")
   role              UserRole @default(CLIENT)
   preferredLanguage String   @default("en")
   isActive          Boolean  @default(true)

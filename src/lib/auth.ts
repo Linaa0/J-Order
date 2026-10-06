@@ -1,12 +1,14 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { detectContactType, normalizeEmail, normalizePhone } from '@/lib/contact'
 
 const loginSchema = z.object({
   contact: z.string().min(4).max(255),
-  otp: z.string().length(6),
+  otp: z.string().length(6).optional(),
+  password: z.string().min(6).max(255).optional(),
 })
 
 export const authOptions: NextAuthOptions = {
@@ -26,7 +28,7 @@ export const authOptions: NextAuthOptions = {
         const parsed = loginSchema.safeParse(credentials)
         if (!parsed.success) return null
 
-        const { contact, otp } = parsed.data
+        const { contact, otp, password } = parsed.data
         const type = detectContactType(contact)
         const normalizedContact = type === 'email' ? normalizeEmail(contact) : normalizePhone(contact)
 
@@ -40,6 +42,24 @@ export const authOptions: NextAuthOptions = {
           include: { staffCategories: true },
         })
         if (!user || !user.isActive) return null
+
+        if (typeof password === 'string') {
+          if (!user.passwordHash) return null
+          const passwordMatches = await bcrypt.compare(password, user.passwordHash)
+          if (!passwordMatches) return null
+
+          return {
+            id: user.id,
+            phone: user.phone ?? '',
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            preferredLanguage: user.preferredLanguage,
+            staffCategories: user.staffCategories.map((c) => c.category),
+          }
+        }
+
+        if (!otp) return null
 
         const otpRecord = await prisma.otpCode.findFirst({
           where: {

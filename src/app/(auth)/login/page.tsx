@@ -1,20 +1,24 @@
 'use client'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { motion } from 'framer-motion'
-import { Mail, MessageSquareText, Phone, Smartphone, ShieldCheck } from 'lucide-react'
+import { Mail, MessageSquareText, Phone, Smartphone } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Wordmark } from '@/components/branding/Wordmark'
-import { detectContactType, normalizeEmail, normalizePhone } from '@/lib/contact'
+import { detectContactType, normalizeEmail } from '@/lib/contact'
 import { sanitizePhone } from '@/lib/utils'
 
 type DeliveryMethod = 'sms' | 'whatsapp'
+type LoginMethod = 'code' | 'password'
 
 export default function LoginPage() {
   const router = useRouter()
   const [contact, setContact] = useState('')
   const [contactType, setContactType] = useState<'email' | 'phone'>('phone')
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('sms')
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>('code')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -28,7 +32,38 @@ export default function LoginPage() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handlePasswordLogin(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    const trimmed = contact.trim()
+
+    if (!trimmed || !password.trim()) {
+      setError('Email or phone number and password are required')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const result = await signIn('credentials', {
+        contact: trimmed,
+        password: password.trim(),
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError('Invalid email, phone number, or password')
+        return
+      }
+
+      router.push('/')
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleSendCode(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     const trimmed = contact.trim()
@@ -99,7 +134,26 @@ export default function LoginPage() {
         </div>
 
         <div className="rounded-3xl bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.25)]">
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="rounded-2xl border border-navy-200 bg-navy-50 p-1 mb-5">
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                type="button"
+                onClick={() => setLoginMethod('code')}
+                className={`rounded-xl px-3 py-2 text-sm font-medium transition-all ${loginMethod === 'code' ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-500'}`}
+              >
+                Verification code
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginMethod('password')}
+                className={`rounded-xl px-3 py-2 text-sm font-medium transition-all ${loginMethod === 'password' ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-500'}`}
+              >
+                Password
+              </button>
+            </div>
+          </div>
+
+          <form onSubmit={loginMethod === 'password' ? handlePasswordLogin : handleSendCode} className="space-y-5">
             <div className="rounded-2xl border border-navy-200 bg-navy-50 p-1">
               <div className="grid grid-cols-2 gap-1">
                 <button
@@ -141,7 +195,21 @@ export default function LoginPage() {
               />
             </div>
 
-            {!isEmailLookup && (
+            {loginMethod === 'password' && (
+              <div className="relative">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="h-12 w-full rounded-xl border-2 border-slate-200 bg-white px-4 text-navy-900 placeholder-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                  aria-label="Password"
+                  autoComplete="current-password"
+                />
+              </div>
+            )}
+
+            {!isEmailLookup && loginMethod === 'code' && (
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
                 <p className="mb-3 text-xs font-medium uppercase tracking-[0.08em] text-slate-500">Delivery method</p>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -172,7 +240,7 @@ export default function LoginPage() {
             {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
 
             <Button type="submit" loading={loading} className="w-full" size="lg">
-              Send verification code
+              {loginMethod === 'password' ? 'Log in with password' : 'Send verification code'}
             </Button>
           </form>
 
