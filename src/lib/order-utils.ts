@@ -2,6 +2,7 @@ import { OrderStatus, ProductCategory } from '@prisma/client'
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'Pending',
+  AWAITING_CONSOLIDATION: 'Awaiting Consolidation',
   CONFIRMED: 'Confirmed',
   PROCESSING: 'Processing',
   OUT_FOR_DELIVERY: 'Out for Delivery',
@@ -33,7 +34,8 @@ export function getStatusStep(status: OrderStatus): number {
 
 export function canTransitionTo(from: OrderStatus, to: OrderStatus): boolean {
   const transitions: Record<OrderStatus, OrderStatus[]> = {
-    PENDING: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+    PENDING: [OrderStatus.AWAITING_CONSOLIDATION, OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+    AWAITING_CONSOLIDATION: [OrderStatus.CONFIRMED, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.CANCELLED],
     CONFIRMED: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
     PROCESSING: [OrderStatus.OUT_FOR_DELIVERY, OrderStatus.CANCELLED],
     OUT_FOR_DELIVERY: [OrderStatus.DELIVERED, OrderStatus.COMPLETED],
