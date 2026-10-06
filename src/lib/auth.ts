@@ -46,21 +46,44 @@ export const authOptions: NextAuthOptions = {
             userId: user.id,
             code: otp,
             used: false,
+            attemptCount: { lt: 5 },
             expiresAt: { gt: new Date() },
           },
           orderBy: { createdAt: 'desc' },
         })
 
-        if (!otpRecord) return null
+        if (!otpRecord) {
+          const activeOtp = await prisma.otpCode.findFirst({
+            where: {
+              userId: user.id,
+              used: false,
+              attemptCount: { lt: 5 },
+              expiresAt: { gt: new Date() },
+            },
+            orderBy: { createdAt: 'desc' },
+          })
 
-        await prisma.otpCode.update({
-          where: { id: otpRecord.id },
+          if (activeOtp) {
+            await prisma.otpCode.update({
+              where: { id: activeOtp.id },
+              data: {
+                attemptCount: { increment: 1 },
+                ...(activeOtp.attemptCount >= 4 ? { used: true } : {}),
+              },
+            })
+          }
+          return null
+        }
+
+        const consumed = await prisma.otpCode.updateMany({
+          where: { id: otpRecord.id, used: false, attemptCount: { lt: 5 }, expiresAt: { gt: new Date() } },
           data: { used: true },
         })
+        if (consumed.count !== 1) return null
 
         return {
           id: user.id,
-          phone: user.phone,
+          phone: user.phone ?? '',
           name: user.name,
           email: user.email,
           role: user.role,

@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { randomBytes } from 'crypto'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -18,6 +19,10 @@ export function generateOrderNumber(): string {
   const timestamp = Date.now().toString(36).toUpperCase()
   const random = randomChars(4)
   return `GES${timestamp}${random}`
+}
+
+export function generatePurchaseCode(): string {
+  return randomBytes(4).toString('hex').toUpperCase()
 }
 
 export function formatDate(date: Date | string, locale = 'en'): string {

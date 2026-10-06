@@ -41,6 +41,7 @@ export default function VerifyPage() {
   }, [contact, router])
 
   function handleChange(idx: number, value: string) {
+    if (loading) return
     if (!/^\d*$/.test(value)) return
     const next = [...code]
     next[idx] = value.slice(-1)
@@ -49,6 +50,16 @@ export default function VerifyPage() {
     if (next.every((c) => c)) {
       verify(next.join(''))
     }
+  }
+
+  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    if (!pasted) return
+    e.preventDefault()
+    const next = Array.from({ length: 6 }, (_, index) => pasted[index] ?? '')
+    setCode(next)
+    inputs.current[Math.min(pasted.length, 5)]?.focus()
+    if (pasted.length === 6) verify(pasted)
   }
 
   function handleKeyDown(idx: number, e: React.KeyboardEvent) {
@@ -90,13 +101,19 @@ export default function VerifyPage() {
         ? { contact, contactType: 'email' }
         : { contact, contactType: 'phone', deliveryMethod: sessionStorage.getItem('jorder_delivery_method') ?? 'sms' }
 
-      await fetch('/api/auth/send-otp', {
+      const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
+      const data = await response.json()
+      if (!response.ok) {
+        setError(data.error || 'Failed to resend. Please try again.')
+        return
+      }
+
       setCountdown(60)
-      toast.success('New code sent')
+      toast.success(`New code sent via ${data.channel || 'your selected method'}`)
     } catch {
       setError('Failed to resend. Please try again.')
     } finally {
@@ -140,6 +157,7 @@ export default function VerifyPage() {
                 value={digit}
                 onChange={(e) => handleChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
+                onPaste={handlePaste}
                 className="h-14 w-11 rounded-xl border-2 text-center text-xl font-bold text-navy-900 focus:outline-none focus:border-ember-700 focus:ring-2 focus:ring-ember-700/20 transition-all border-navy-200"
                 aria-label={`Digit ${idx + 1}`}
               />

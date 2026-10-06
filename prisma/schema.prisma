@@ -24,12 +24,29 @@ enum ProductCategory {
 
 enum OrderStatus {
   PENDING
+  AWAITING_CONSOLIDATION
   CONFIRMED
   PROCESSING
   OUT_FOR_DELIVERY
   DELIVERED
   COMPLETED
   CANCELLED
+}
+
+enum PaymentStatus {
+  PAID
+  NOT_PAID
+}
+
+enum OrderGroupType {
+  CUSTOMER_GROUP
+  CONSOLIDATION
+}
+
+enum TruckCapacity {
+  TWO_TONNES
+  THREE_AND_HALF_TONNES
+  FOUR_AND_HALF_TONNES
 }
 
 enum NotificationChannel {
@@ -39,36 +56,37 @@ enum NotificationChannel {
 }
 
 model User {
-  id                String    @id @default(cuid())
-  phone             String    @unique
+  id                String   @id @default(cuid())
+  phone             String?  @unique
   name              String?
-  email             String?   @unique
-  role              UserRole  @default(CLIENT)
-  preferredLanguage String    @default("en")
-  isActive          Boolean   @default(true)
-  isGuest           Boolean   @default(false)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  email             String?  @unique
+  role              UserRole @default(CLIENT)
+  preferredLanguage String   @default("en")
+  isActive          Boolean  @default(true)
+  isGuest           Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  orders            Order[]   @relation("ClientOrders")
-  assignedOrders    Order[]   @relation("AssignedOrders")
-  statusChanges     OrderStatusHistory[]
-  notifications     Notification[]
-  staffCategories   StaffProductCategory[]
-  otpCodes          OtpCode[]
+  orders          Order[]                @relation("ClientOrders")
+  assignedOrders  Order[]                @relation("AssignedOrders")
+  statusChanges   OrderStatusHistory[]
+  notifications   Notification[]
+  staffCategories StaffProductCategory[]
+  otpCodes        OtpCode[]
 
   @@map("users")
 }
 
 model OtpCode {
-  id        String   @id @default(cuid())
-  userId    String
-  code      String
-  expiresAt DateTime
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  userId       String
+  code         String
+  expiresAt    DateTime
+  used         Boolean  @default(false)
+  attemptCount Int      @default(0)
+  createdAt    DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("otp_codes")
 }
@@ -78,38 +96,88 @@ model StaffProductCategory {
   userId   String
   category ProductCategory
 
-  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, category])
   @@map("staff_product_categories")
 }
 
 model Order {
-  id                String      @id @default(cuid())
-  orderNumber       String      @unique
-  clientId          String
-  assignedToId      String?
-  status            OrderStatus @default(PENDING)
-  notes             String?
-  deliveryAddress   String
-  deliveryLat       Float?
-  deliveryLng       Float?
-  preferredDate     DateTime
-  preferredTime     String
+  id                 String      @id @default(cuid())
+  orderNumber        String      @unique
+  purchaseCode       String      @unique @map("purchase_code")
+  clientId           String
+  assignedToId       String?
+  status             OrderStatus @default(PENDING)
+  paymentStatus      PaymentStatus @default(NOT_PAID) @map("payment_status")
+  tinNumber          String?     @map("tin_number")
+  groupId            String?     @map("group_order_id")
+  truckCapacity      TruckCapacity? @map("truck_capacity")
+  notes              String?
+  deliveryAddress    String
+  deliveryLat        Float?
+  deliveryLng        Float?
+  preferredDate      DateTime
+  preferredTime      String
   cancellationReason String?
-  isGuestOrder      Boolean     @default(false)
-  guestPhone        String?
-  syncedAt          DateTime?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  isGuestOrder       Boolean     @default(false)
+  guestPhone         String?
+  syncedAt           DateTime?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
-  client            User        @relation("ClientOrders", fields: [clientId], references: [id])
-  assignedTo        User?       @relation("AssignedOrders", fields: [assignedToId], references: [id])
-  items             OrderItem[]
-  statusHistory     OrderStatusHistory[]
-  notifications     Notification[]
+  client        User                 @relation("ClientOrders", fields: [clientId], references: [id])
+  assignedTo    User?                @relation("AssignedOrders", fields: [assignedToId], references: [id])
+  group         OrderGroup?          @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  items         OrderItem[]
+  statusHistory OrderStatusHistory[]
+  notifications Notification[]
 
+  @@index([status, createdAt])
+  @@index([paymentStatus, createdAt])
+  @@index([groupId])
+  @@index([deliveryLat, deliveryLng])
   @@map("orders")
+}
+
+model OrderGroup {
+  id             String         @id @default(cuid())
+  reference      String         @unique
+  type           OrderGroupType
+  truckCapacity  TruckCapacity? @map("truck_capacity")
+  dispatchedAt   DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  orders Order[]
+
+  @@index([type, createdAt])
+  @@map("order_groups")
+}
+
+model AppSetting {
+  id                         Int      @id @default(1)
+  consolidationSizeKg        Int      @default(100)
+  maxConsolidationDistanceKm Float    @default(5)
+  maxConsolidationWaitHours  Int      @default(48)
+  dailySummaryHour           Int      @default(18)
+  adminEmail                 String?
+  adminPhone                 String?
+  updatedAt                  DateTime @updatedAt
+
+  @@map("app_settings")
+}
+
+model DailyOrderSummary {
+  id               String   @id @default(cuid())
+  summaryDate      DateTime @unique @map("summary_date") @db.Date
+  payload          Json
+  emailAttemptedAt DateTime? @map("email_attempted_at")
+  smsAttemptedAt   DateTime? @map("sms_attempted_at")
+  createdAt        DateTime @default(now())
+
+  @@index([summaryDate])
+  @@map("daily_order_summaries")
 }
 
 model OrderItem {
@@ -119,22 +187,22 @@ model OrderItem {
   quantity  Int
   unitPrice Decimal?        @db.Decimal(10, 2)
 
-  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("order_items")
 }
 
 model OrderStatusHistory {
-  id        String      @id @default(cuid())
+  id        String       @id @default(cuid())
   orderId   String
   changedBy String
   oldStatus OrderStatus?
   newStatus OrderStatus
   reason    String?
-  createdAt DateTime    @default(now())
+  createdAt DateTime     @default(now())
 
-  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  user      User        @relation(fields: [changedBy], references: [id])
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [changedBy], references: [id])
 
   @@map("order_status_history")
 }
@@ -150,8 +218,8 @@ model Notification {
   sentAt    DateTime?
   createdAt DateTime            @default(now())
 
-  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  order     Order?              @relation(fields: [orderId], references: [id])
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id])
 
   @@map("notifications")
 }

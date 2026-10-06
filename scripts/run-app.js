@@ -102,7 +102,9 @@ function clearNextBuildArtifacts() {
   const nextOutput = path.join(projectRoot, ".next");
   if (fs.existsSync(path.join(nextOutput, "BUILD_ID"))) {
     fs.rmSync(nextOutput, { recursive: true, force: true });
-    console.log("Cleared production build output before starting the dev server.");
+    console.log(
+      "Cleared production build output before starting the dev server.",
+    );
   }
 }
 
@@ -244,7 +246,9 @@ async function main() {
     if (mode === "full") {
       stopProjectDevServers();
       clearNextBuildArtifacts();
-      console.log("Starting Next.js directly (without the npm shell wrapper)...");
+      console.log(
+        "Starting Next.js directly (without the npm shell wrapper)...",
+      );
       await startNextDev(dbUrl);
       return;
     }

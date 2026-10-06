@@ -1,0 +1,2 @@
+ALTER TABLE "otp_codes"
+ADD COLUMN "attemptCount" INTEGER NOT NULL DEFAULT 0;
