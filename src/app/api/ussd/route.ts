@@ -8,7 +8,6 @@ const sessions: Map<string, { step: number; data: Record<string, string> }> = ne
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
   const sessionId = formData.get('sessionId') as string
-  const serviceCode = formData.get('serviceCode') as string
   const phoneNumber = formData.get('phoneNumber') as string
   const text = formData.get('text') as string || ''
 

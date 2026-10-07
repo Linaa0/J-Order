@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Plus, Package } from 'lucide-react'
@@ -10,7 +9,6 @@ import { OrderCardSkeleton } from '@/components/ui/Skeleton'
 import type { OrderWithDetails } from '@/types'
 
 export default function OrdersPage() {
-  const { data: session } = useSession()
   const router = useRouter()
   const [orders, setOrders] = useState<OrderWithDetails[]>([])
   const [loading, setLoading] = useState(true)

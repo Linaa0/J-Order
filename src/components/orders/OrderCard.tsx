@@ -1,6 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import { Calendar, MapPin, Package } from 'lucide-react'
+import { Calendar, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'

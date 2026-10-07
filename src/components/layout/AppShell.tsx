@@ -1,9 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Home, Package, PlusCircle, LayoutDashboard, Settings, LogOut } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { GearLogo } from '@/components/branding/GearLogo'
 import { motion } from 'framer-motion'
@@ -15,6 +16,8 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const { data: session } = useSession()
   const pathname = usePathname()
+  const router = useRouter()
+  const t = useTranslations('nav')
   const role = session?.user?.role
   const [language, setLanguage] = useState('en')
 
@@ -37,22 +40,24 @@ export function AppShell({ children }: AppShellProps) {
         body: JSON.stringify({ preferredLanguage: code }),
       })
     }
+
+    router.refresh()
   }
 
   const clientNav = [
-    { href: '/', icon: Home, label: 'Home' },
-    { href: '/orders', icon: Package, label: 'My Orders' },
-    { href: '/order/new', icon: PlusCircle, label: 'New Order' },
+    { href: '/', icon: Home, label: t('home') },
+    { href: '/orders', icon: Package, label: t('orders') },
+    { href: '/order/new', icon: PlusCircle, label: t('newOrder') },
   ]
 
   const staffNav = [
-    { href: '/staff/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/settings', icon: Settings, label: 'Settings' },
+    { href: '/staff/dashboard', icon: LayoutDashboard, label: t('dashboard') },
+    { href: '/settings', icon: Settings, label: t('settings') },
   ]
 
   const adminNav = [
-    { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/settings', icon: Settings, label: 'Settings' },
+    { href: '/admin/dashboard', icon: LayoutDashboard, label: t('dashboard') },
+    { href: '/settings', icon: Settings, label: t('settings') },
   ]
 
   const navItems =
@@ -94,10 +99,10 @@ export function AppShell({ children }: AppShellProps) {
                 type="button"
                 onClick={() => void signOut({ callbackUrl: '/login' })}
                 className="flex items-center gap-1 rounded-full border border-white/20 bg-white/5 px-2 py-1 text-xs text-white transition hover:bg-white/10"
-                aria-label="Log out"
+                aria-label={t('signOut')}
               >
                 <LogOut size={14} />
-                <span className="hidden sm:inline">Log out</span>
+                <span className="hidden sm:inline">{t('signOut')}</span>
               </button>
             )}
           </div>

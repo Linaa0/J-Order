@@ -1,7 +1,8 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GearLogo } from '@/components/branding/GearLogo'
 
@@ -21,6 +22,7 @@ function getRedirectPath(role: string | undefined) {
 export default function HomePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const t = useTranslations('language')
 
   const [showSplash, setShowSplash] = useState(true)
   const [showLanguage, setShowLanguage] = useState(false)
@@ -58,6 +60,7 @@ export default function HomePage() {
     setSelectedLang(code)
     setShowLanguage(false)
     setLangChosen(true)
+    router.refresh()
   }
 
   return (
@@ -120,8 +123,8 @@ export default function HomePage() {
             className="text-center text-white z-10 px-6 w-full max-w-sm"
           >
             <GearLogo dark animated className="mx-auto mb-6" iconClassName="h-12 w-16" wordmarkClassName="text-3xl" />
-            <h2 className="font-display text-3xl font-bold mb-2">Welcome to J Order</h2>
-            <p className="text-navy-300 mb-8">Choose your language to get started</p>
+            <h2 className="font-display text-3xl font-bold mb-2">{t('select')}</h2>
+            <p className="text-navy-300 mb-8">{t('subtitle')}</p>
             <div className="grid grid-cols-2 gap-3">
               {languages.map((lang) => (
                 <motion.button

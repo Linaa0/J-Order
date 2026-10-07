@@ -21,8 +21,11 @@ export function getKigaliHour(date = new Date()) {
 
 export function getSummaryWindow(date: Date) {
   const { year, month, day } = getKigaliDateParts(date)
-  const start = new Date(Date.UTC(year, month - 1, day) - 2 * 60 * 60 * 1000)
-  return { start, end: new Date(start.getTime() + 24 * 60 * 60 * 1000), summaryDate: new Date(Date.UTC(year, month - 1, day)) }
+  const localDayStart = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T00:00:00+02:00`)
+  const start = new Date(localDayStart.getTime())
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000)
+  const summaryDate = new Date(Date.UTC(year, month - 1, day))
+  return { start, end, summaryDate }
 }
 
 export async function buildDailySummary(date: Date) {

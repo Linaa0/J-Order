@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Mail, MessageSquareText, Phone, Smartphone } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -14,6 +15,7 @@ type LoginMethod = 'code' | 'password'
 
 export default function LoginPage() {
   const router = useRouter()
+  const t = useTranslations('auth')
   const [contact, setContact] = useState('')
   const [contactType, setContactType] = useState<'email' | 'phone'>('phone')
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('sms')
@@ -130,7 +132,7 @@ export default function LoginPage() {
       >
         <div className="mb-8 text-center">
           <Wordmark dark className="justify-center" />
-          <p className="mt-4 text-sm text-slate-300">Choose how you want to continue</p>
+          <p className="mt-4 text-sm text-slate-300">{t('subtitle')}</p>
         </div>
 
         <div className="rounded-3xl bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.25)]">
@@ -141,14 +143,14 @@ export default function LoginPage() {
                 onClick={() => setLoginMethod('code')}
                 className={`rounded-xl px-3 py-2 text-sm font-medium transition-all ${loginMethod === 'code' ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-500'}`}
               >
-                Verification code
+                {t('otpTitle')}
               </button>
               <button
                 type="button"
                 onClick={() => setLoginMethod('password')}
                 className={`rounded-xl px-3 py-2 text-sm font-medium transition-all ${loginMethod === 'password' ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-500'}`}
               >
-                Password
+                {t('signIn')}
               </button>
             </div>
           </div>

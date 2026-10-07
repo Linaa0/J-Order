@@ -30,14 +30,18 @@ export async function GET() {
       _sum: { quantity: true },
       orderBy: { _sum: { quantity: 'desc' } },
     }),
-    prisma.$queryRaw`
-      SELECT DATE(created_at) as date, COUNT(*) as count
-      FROM orders
-      WHERE created_at >= ${startOf30Days}
-      GROUP BY DATE(created_at)
-      ORDER BY date ASC
-    `,
+    prisma.order.groupBy({
+      by: ['createdAt'],
+      where: { createdAt: { gte: startOf30Days } },
+      _count: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    }),
   ])
+
+  const normalizedDailyOrders = dailyOrders.map((item) => ({
+    date: new Date(item.createdAt).toISOString().slice(0, 10),
+    count: String(item._count.createdAt),
+  }))
 
   const completionRate = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0
 
@@ -49,7 +53,7 @@ export async function GET() {
       cancelledOrders,
       completionRate,
       productCounts,
-      dailyOrders,
+      dailyOrders: normalizedDailyOrders,
     },
   })
 }

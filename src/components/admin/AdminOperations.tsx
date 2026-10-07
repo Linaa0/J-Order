@@ -121,34 +121,98 @@ export function AdminOrdersPanel() {
       </div>
     </Card>
     <Card className="p-0 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[1450px] text-left text-sm">
-          <thead className="bg-navy-50 text-xs uppercase text-navy-500"><tr>{['No.', 'Order number', 'Customer name', 'Quantity and total', 'Client name', 'TIN', 'Purchase code', 'Payment', 'Status', 'Delivery location', 'Ordered'].map((label) => <th key={label} className="px-3 py-3 font-semibold">{label}</th>)}</tr></thead>
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full min-w-full table-fixed text-left text-sm">
+          <thead className="bg-navy-50 text-xs uppercase text-navy-500"><tr>{['No.', 'Order number', 'Customer', 'Items', 'Purchase code', 'Payment', 'Status', 'Delivery location', 'Ordered'].map((label) => <th key={label} className="px-3 py-3 font-semibold">{label}</th>)}</tr></thead>
           <tbody className="divide-y divide-navy-100">
-            {!loading && grouped.length === 0 && <tr><td colSpan={11} className="p-8 text-center text-navy-400">No orders found</td></tr>}
+            {!loading && grouped.length === 0 && <tr><td colSpan={9} className="p-8 text-center text-navy-400">No orders found</td></tr>}
             {grouped.flatMap(([key, rows], index) => {
               const first = rows[0]
               const isGroup = Boolean(first.group)
               const isExpanded = expanded.includes(key)
               const total = rows.reduce((sum, order) => sum + order.items.reduce((count, item) => count + item.quantity, 0), 0)
               const mainRow = <tr key={key} className="align-top hover:bg-navy-50/60">
-                <td className="px-3 py-3">{(page - 1) * 25 + index + 1}</td>
-                <td className="px-3 py-3 font-mono text-xs">{isGroup ? <button className="flex items-center gap-1 font-semibold" onClick={() => setExpanded((current) => isExpanded ? current.filter((item) => item !== key) : [...current, key])}>{isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}{first.group?.reference}</button> : first.orderNumber}{isGroup && <div className="mt-1 text-xs text-ember-700">{first.group?.type === 'CUSTOMER_GROUP' ? 'Customer group' : 'Delivery consolidation'} · {rows.length} orders</div>}</td>
-                <td className="px-3 py-3">{first.client.name || first.client.phone}</td>
-                <td className="px-3 py-3"><div>{first.items.map((item) => `${item.quantity} x ${PRODUCT_LABELS[item.product]}`).join(', ')}</div><div className="mt-1 text-xs font-semibold">Total {total} items</div></td>
-                <td className="px-3 py-3">{first.client.name || 'Not provided'}</td>
-                <td className="px-3 py-3">{first.tinNumber || 'Not provided'}</td>
-                <td className="px-3 py-3 font-mono">{first.purchaseCode}</td>
-                <td className="px-3 py-3"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${first.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{first.paymentStatus === 'PAID' ? 'Paid' : 'Not paid'}</span></td>
-                <td className="px-3 py-3"><span className="rounded-full bg-navy-100 px-2 py-1 text-xs">{ORDER_STATUS_LABELS[first.status]}</span></td>
-                <td className="px-3 py-3">{isGroup ? `${new Set(rows.map((order) => order.deliveryAddress)).size} delivery locations` : first.deliveryAddress}</td>
-                <td className="px-3 py-3 whitespace-nowrap">{new Date(first.createdAt).toLocaleString()}</td>
+                <td className="px-3 py-3 text-navy-400">{(page - 1) * 25 + index + 1}</td>
+                <td className="px-3 py-3">
+                  <button className="flex items-center gap-1 text-left font-mono text-xs font-semibold text-navy-900" onClick={() => setExpanded((current) => isExpanded ? current.filter((item) => item !== key) : [...current, key])}>
+                    {isGroup ? (isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />) : null}
+                    <span className="truncate max-w-[140px]" title={isGroup ? first.group?.reference ?? first.orderNumber : first.orderNumber}>{isGroup ? first.group?.reference ?? first.orderNumber : first.orderNumber}</span>
+                  </button>
+                  {isGroup && <div className="mt-1 text-[11px] text-ember-700">{first.group?.type === 'CUSTOMER_GROUP' ? 'Customer group' : 'Delivery consolidation'} · {rows.length} orders</div>}
+                </td>
+                <td className="px-3 py-3">
+                  <div className="truncate font-medium text-navy-900" title={first.client.name || first.client.phone}>{first.client.name || first.client.phone}</div>
+                  <div className="mt-1 text-[11px] text-navy-500">{first.tinNumber ? `TIN: ${first.tinNumber}` : 'TIN: Not provided'}</div>
+                </td>
+                <td className="px-3 py-3">
+                  <div className="truncate" title={first.items.map((item) => `${item.quantity} x ${PRODUCT_LABELS[item.product]}`).join(', ')}>{first.items.map((item) => `${item.quantity} x ${PRODUCT_LABELS[item.product]}`).join(', ')}</div>
+                  <div className="mt-1 text-[11px] font-semibold text-navy-600">Total {total} items</div>
+                </td>
+                <td className="px-3 py-3 font-mono text-[11px] text-navy-700" title={first.purchaseCode}>{first.purchaseCode}</td>
+                <td className="px-3 py-3"><span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${first.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{first.paymentStatus === 'PAID' ? 'Paid' : 'Not paid'}</span></td>
+                <td className="px-3 py-3"><span className="inline-flex rounded-full bg-navy-100 px-2 py-1 text-xs font-semibold text-navy-700">{ORDER_STATUS_LABELS[first.status]}</span></td>
+                <td className="px-3 py-3">
+                  <div className="truncate max-w-[210px]" title={isGroup ? `${new Set(rows.map((order) => order.deliveryAddress)).size} delivery locations` : first.deliveryAddress}>{isGroup ? `${new Set(rows.map((order) => order.deliveryAddress)).size} delivery locations` : first.deliveryAddress}</div>
+                </td>
+                <td className="px-3 py-3 whitespace-nowrap text-xs text-navy-500">{new Date(first.createdAt).toLocaleString()}</td>
               </tr>
-              const childRows = isGroup && isExpanded ? rows.map((order) => <tr key={order.id} className="bg-amber-50/50 text-xs"><td className="px-3 py-2">{order.orderNumber}</td><td className="px-3 py-2">{order.orderNumber}</td><td className="px-3 py-2">{order.client.name || order.client.phone}</td><td className="px-3 py-2">{order.items.map((item) => `${item.quantity} x ${PRODUCT_LABELS[item.product]}`).join(', ')}</td><td className="px-3 py-2">{order.client.name || 'Not provided'}</td><td className="px-3 py-2">{order.tinNumber || 'Not provided'}</td><td className="px-3 py-2 font-mono">{order.purchaseCode}</td><td className="px-3 py-2">{order.paymentStatus === 'PAID' ? 'Paid' : 'Not paid'}</td><td className="px-3 py-2">{ORDER_STATUS_LABELS[order.status]}</td><td className="px-3 py-2">{order.deliveryAddress}</td><td className="px-3 py-2">{new Date(order.createdAt).toLocaleString()}</td></tr>) : []
+              const childRows = isGroup && isExpanded ? rows.map((order) => <tr key={order.id} className="bg-amber-50/50 text-xs"><td className="px-3 py-2 text-navy-400">{order.orderNumber}</td><td className="px-3 py-2 font-mono text-[11px]">{order.orderNumber}</td><td className="px-3 py-2"><div className="font-medium text-navy-900">{order.client.name || order.client.phone}</div><div className="text-[10px] text-navy-500">{order.tinNumber ? `TIN: ${order.tinNumber}` : 'TIN: Not provided'}</div></td><td className="px-3 py-2">{order.items.map((item) => `${item.quantity} x ${PRODUCT_LABELS[item.product]}`).join(', ')}</td><td className="px-3 py-2 font-mono text-[11px]">{order.purchaseCode}</td><td className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{order.paymentStatus === 'PAID' ? 'Paid' : 'Not paid'}</span></td><td className="px-3 py-2"><span className="inline-flex rounded-full bg-navy-100 px-2 py-1 text-[10px] font-semibold text-navy-700">{ORDER_STATUS_LABELS[order.status]}</span></td><td className="px-3 py-2 text-navy-600">{order.deliveryAddress}</td><td className="px-3 py-2 whitespace-nowrap text-[10px] text-navy-500">{new Date(order.createdAt).toLocaleString()}</td></tr>) : []
               return [mainRow, ...childRows]
             })}
           </tbody>
         </table>
+      </div>
+      <div className="md:hidden space-y-3 p-3">
+        {!loading && grouped.length === 0 && <div className="rounded-2xl border border-dashed border-navy-200 p-6 text-center text-sm text-navy-400">No orders found</div>}
+        {grouped.map(([key, rows], index) => {
+          const first = rows[0]
+          const isGroup = Boolean(first.group)
+          const isExpanded = expanded.includes(key)
+          const total = rows.reduce((sum, order) => sum + order.items.reduce((count, item) => count + item.quantity, 0), 0)
+          return (
+            <div key={key} className="rounded-2xl border border-navy-200 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <button className="flex items-center gap-2 text-left text-sm font-semibold text-navy-900" onClick={() => setExpanded((current) => isExpanded ? current.filter((item) => item !== key) : [...current, key])}>
+                    {isGroup ? (isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />) : null}
+                    <span className="truncate">{isGroup ? first.group?.reference ?? first.orderNumber : first.orderNumber}</span>
+                  </button>
+                  <p className="mt-1 text-xs text-navy-500">{first.client.name || first.client.phone}</p>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${first.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{first.paymentStatus === 'PAID' ? 'Paid' : 'Not paid'}</span>
+                  <span className="inline-flex rounded-full bg-navy-100 px-2 py-1 text-[10px] font-semibold text-navy-700">{ORDER_STATUS_LABELS[first.status]}</span>
+                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-navy-600">
+                <div><span className="block text-[10px] uppercase tracking-wide text-navy-400">Purchase</span><span className="font-mono">{first.purchaseCode}</span></div>
+                <div><span className="block text-[10px] uppercase tracking-wide text-navy-400">Items</span><span>{total}</span></div>
+              </div>
+              {isExpanded && isGroup && (
+                <div className="mt-3 space-y-2 border-t border-navy-100 pt-3">
+                  {rows.map((order) => (
+                    <div key={order.id} className="rounded-xl bg-navy-50 p-2 text-xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-[10px]">{order.orderNumber}</span>
+                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{order.paymentStatus === 'PAID' ? 'Paid' : 'Not paid'}</span>
+                      </div>
+                      <p className="mt-1 text-navy-700">{order.deliveryAddress}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {!isGroup && (
+                <div className="mt-3 text-xs text-navy-500">
+                  <p>{first.deliveryAddress}</p>
+                </div>
+              )}
+              <div className="mt-3 flex items-center justify-between text-[10px] text-navy-500">
+                <span>{(page - 1) * 25 + index + 1}</span>
+                <span>{new Date(first.createdAt).toLocaleString()}</span>
+              </div>
+            </div>
+          )
+        })}
       </div>
       <div className="flex items-center justify-between border-t border-navy-100 px-4 py-3 text-sm"><span>Page {page} of {pages}</span><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page <= 1 || loading} onClick={() => setPage((value) => value - 1)}>Previous</Button><Button variant="outline" size="sm" disabled={page >= pages || loading} onClick={() => setPage((value) => value + 1)}>Next</Button></div></div>
     </Card>

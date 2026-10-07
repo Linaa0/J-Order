@@ -1,7 +1,6 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, MapPin, CheckCircle2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -23,7 +22,6 @@ const PRODUCTS = [
 const STEP_LABELS = ['Product', 'Quantity', 'Location', 'Date', 'Review']
 
 export default function NewOrderPage() {
-  const { data: session } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
   const isGuest = searchParams.get('guest') === '1'
@@ -87,7 +85,7 @@ export default function NewOrderPage() {
     }
 
     if (!navigator.onLine) {
-      const saved = await saveOrderOffline(payload)
+      await saveOrderOffline(payload)
       setSubmitting(false)
       toast.success('Order saved. Will send when you reconnect.')
       reset()
