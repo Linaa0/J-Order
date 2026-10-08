@@ -17,7 +17,8 @@
     "db:seed": "ts-node --project tsconfig.seed.json prisma/seed.ts",
     "db:studio": "prisma studio",
     "generate:icons": "node scripts/generate-icons.mjs",
-    "app:run": "node scripts/run-app.js"
+    "app:run": "node scripts/run-app.js",
+    "i18n:check": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "10.2.9",

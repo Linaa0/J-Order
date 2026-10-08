@@ -1,5 +1,5 @@
-export type { User, Order, OrderItem, OrderStatusHistory, Notification } from '@prisma/client'
-export { UserRole, ProductCategory, OrderStatus, NotificationChannel } from '@prisma/client'
+export type { User, Order, OrderItem, OrderStatusHistory, Notification, Truck, DeliveryTrip } from '@prisma/client'
+export { UserRole, ProductCategory, OrderStatus, NotificationChannel, PaymentStatus, PaymentMethod, TruckStatus } from '@prisma/client'
 
 export interface ApiResponse<T = unknown> {
   data?: T
@@ -13,14 +13,18 @@ export interface OrderWithDetails {
   purchaseCode: string
   status: import('@prisma/client').OrderStatus
   paymentStatus: import('@prisma/client').PaymentStatus
+  amountDue: number | null
+  amountPaid: number
   tinNumber: string | null
-  truckCapacity: import('@prisma/client').TruckCapacity | null
+  companyName: string | null
+  truckCapacity: string | null
   groupId: string | null
+  tripId: string | null
   group?: {
     id: string
     reference: string
     type: import('@prisma/client').OrderGroupType
-    truckCapacity: import('@prisma/client').TruckCapacity | null
+    truckCapacity: string | null
   } | null
   deliveryAddress: string
   deliveryLat: number | null
@@ -31,16 +35,8 @@ export interface OrderWithDetails {
   cancellationReason: string | null
   createdAt: Date
   updatedAt: Date
-  client: {
-    id: string
-    name: string | null
-    phone: string
-  }
-  assignedTo: {
-    id: string
-    name: string | null
-    phone: string
-  } | null
+  client: { id: string; name: string | null; phone: string | null; email?: string | null }
+  assignedTo: { id: string; name: string | null; phone: string | null } | null
   items: Array<{
     id: string
     product: import('@prisma/client').ProductCategory
@@ -53,11 +49,18 @@ export interface OrderWithDetails {
     newStatus: import('@prisma/client').OrderStatus
     reason: string | null
     createdAt: Date
-    user: {
-      id: string
-      name: string | null
-      role: import('@prisma/client').UserRole
-    }
+    user: { id: string; name: string | null; role: import('@prisma/client').UserRole }
+  }>
+  paymentHistory?: Array<{
+    id: string
+    oldStatus: import('@prisma/client').PaymentStatus | null
+    newStatus: import('@prisma/client').PaymentStatus
+    method: import('@prisma/client').PaymentMethod | null
+    amountPaid: number
+    reference: string | null
+    note: string | null
+    createdAt: Date
+    recorder: { id: string; name: string | null }
   }>
 }
 
@@ -71,6 +74,8 @@ export interface OfflineOrder {
   preferredTime: string
   notes?: string
   guestPhone?: string
+  tinNumber?: string
+  companyName?: string
   createdAt: string
   synced: boolean
   syncAttempts: number

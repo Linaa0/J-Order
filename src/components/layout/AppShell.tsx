@@ -81,7 +81,7 @@ export function AppShell({ children }: AppShellProps) {
               </span>
             )}
             <label className="hidden items-center gap-2 rounded-full border border-white/20 bg-white/5 px-2 py-1 text-xs text-white sm:flex">
-              <span>Lang</span>
+              <span>{t('lang')}</span>
               <select
                 aria-label="Language selector"
                 value={language}

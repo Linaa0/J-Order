@@ -1,4 +1,4 @@
-import { OrderStatus, ProductCategory } from '@prisma/client'
+import { OrderStatus, ProductCategory, PaymentStatus } from '@prisma/client'
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'Pending',
@@ -9,6 +9,12 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   DELIVERED: 'Delivered',
   COMPLETED: 'Completed',
   CANCELLED: 'Cancelled',
+}
+
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  UNPAID: 'Unpaid',
+  PARTIAL: 'Partial',
+  PAID: 'Paid',
 }
 
 export const ORDER_STATUS_STEPS: OrderStatus[] = [
@@ -44,4 +50,8 @@ export function canTransitionTo(from: OrderStatus, to: OrderStatus): boolean {
     CANCELLED: [],
   }
   return transitions[from]?.includes(to) ?? false
+}
+
+export function validateRwandaTin(tin: string): boolean {
+  return /^\d{9}$/.test(tin.trim())
 }

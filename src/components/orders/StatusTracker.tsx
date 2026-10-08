@@ -1,12 +1,13 @@
 'use client'
 import { motion } from 'framer-motion'
 import { Check, Clock, Truck, Package, CheckCircle2, XCircle } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { OrderStatus } from '@prisma/client'
 import { ORDER_STATUS_STEPS, getStatusStep } from '@/lib/order-utils'
 
 const stepIcons = [Clock, Check, Package, Truck, CheckCircle2]
-const stepLabels = ['Order Placed', 'Confirmed', 'Processing', 'Out for Delivery', 'Delivered']
+const STEP_KEYS = ['orderPlaced', 'confirmed', 'processing', 'outForDelivery', 'delivered'] as const
 
 interface StatusTrackerProps {
   status: OrderStatus
@@ -14,6 +15,7 @@ interface StatusTrackerProps {
 }
 
 export function StatusTracker({ status, className }: StatusTrackerProps) {
+  const t = useTranslations('tracking')
   const isCancelled = status === OrderStatus.CANCELLED
   const currentStep = getStatusStep(status)
 
@@ -22,8 +24,8 @@ export function StatusTracker({ status, className }: StatusTrackerProps) {
       <div className={cn('flex items-center gap-3 p-4 bg-red-50 rounded-2xl', className)}>
         <XCircle className="text-red-600 shrink-0" size={32} />
         <div>
-          <p className="font-semibold text-red-800">Order Cancelled</p>
-          <p className="text-sm text-red-600">This order has been cancelled</p>
+          <p className="font-semibold text-red-800">{t('cancelled')}</p>
+          <p className="text-sm text-red-600">{t('cancelledBody')}</p>
         </div>
       </div>
     )
@@ -36,7 +38,7 @@ export function StatusTracker({ status, className }: StatusTrackerProps) {
         <motion.div
           className="absolute left-6 top-6 w-0.5 bg-ember-gradient origin-top"
           initial={{ scaleY: 0 }}
-          animate={{ scaleY: currentStep / (ORDER_STATUS_STEPS.length - 1) }}
+          animate={{ scaleY: ORDER_STATUS_STEPS.length > 1 ? currentStep / (ORDER_STATUS_STEPS.length - 1) : 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
           style={{ height: 'calc(100% - 3rem)' }}
         />
@@ -46,7 +48,6 @@ export function StatusTracker({ status, className }: StatusTrackerProps) {
             const isComplete = idx < currentStep
             const isCurrent = idx === currentStep
             const isPending = idx > currentStep
-
             return (
               <motion.div
                 key={step}
@@ -75,20 +76,11 @@ export function StatusTracker({ status, className }: StatusTrackerProps) {
                   )}
                 </motion.div>
                 <div>
-                  <p className={cn(
-                    'font-semibold text-sm',
-                    isComplete && 'text-navy-900',
-                    isCurrent && 'text-ember-800',
-                    isPending && 'text-navy-300'
-                  )}>
-                    {stepLabels[idx]}
+                  <p className={cn('font-semibold text-sm', isComplete && 'text-navy-900', isCurrent && 'text-ember-800', isPending && 'text-navy-300')}>
+                    {t(STEP_KEYS[idx])}
                   </p>
-                  {isCurrent && (
-                    <p className="text-xs text-ember-600 mt-0.5">In progress</p>
-                  )}
-                  {isComplete && (
-                    <p className="text-xs text-navy-400 mt-0.5">Complete</p>
-                  )}
+                  {isCurrent && <p className="text-xs text-ember-600 mt-0.5">{t('inProgress')}</p>}
+                  {isComplete && <p className="text-xs text-navy-400 mt-0.5">{t('complete')}</p>}
                 </div>
               </motion.div>
             )

@@ -34,8 +34,16 @@ enum OrderStatus {
 }
 
 enum PaymentStatus {
+  UNPAID
+  PARTIAL
   PAID
-  NOT_PAID
+}
+
+enum PaymentMethod {
+  MTN_MOMO
+  AIRTEL_MONEY
+  CASH
+  BANK_TRANSFER
 }
 
 enum OrderGroupType {
@@ -43,10 +51,11 @@ enum OrderGroupType {
   CONSOLIDATION
 }
 
-enum TruckCapacity {
-  TWO_TONNES
-  THREE_AND_HALF_TONNES
-  FOUR_AND_HALF_TONNES
+enum TruckStatus {
+  AVAILABLE
+  LOADING
+  ON_TRIP
+  MAINTENANCE
 }
 
 enum NotificationChannel {
@@ -56,24 +65,29 @@ enum NotificationChannel {
 }
 
 model User {
-  id                String   @id @default(cuid())
-  phone             String?  @unique
-  name              String?
-  email             String?  @unique
-  passwordHash      String?  @map("password_hash")
-  role              UserRole @default(CLIENT)
-  preferredLanguage String   @default("en")
-  isActive          Boolean  @default(true)
-  isGuest           Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  phone              String?  @unique
+  name               String?
+  email              String?  @unique
+  passwordHash       String?  @map("password_hash")
+  mustChangePassword Boolean  @default(false) @map("must_change_password")
+  role               UserRole @default(CLIENT)
+  preferredLanguage  String   @default("en")
+  isActive           Boolean  @default(true)
+  isGuest            Boolean  @default(false)
+  tinNumber          String?  @map("tin_number")
+  companyName        String?  @map("company_name")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  orders          Order[]                @relation("ClientOrders")
-  assignedOrders  Order[]                @relation("AssignedOrders")
+  orders          Order[]              @relation("ClientOrders")
+  assignedOrders  Order[]              @relation("AssignedOrders")
   statusChanges   OrderStatusHistory[]
+  paymentChanges  PaymentHistory[]
   notifications   Notification[]
   staffCategories StaffProductCategory[]
   otpCodes        OtpCode[]
+  tripsAsDriver   DeliveryTrip[]
 
   @@map("users")
 }
@@ -89,6 +103,7 @@ model OtpCode {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, used, expiresAt])
   @@map("otp_codes")
 }
 
@@ -104,16 +119,20 @@ model StaffProductCategory {
 }
 
 model Order {
-  id                 String         @id @default(cuid())
-  orderNumber        String         @unique
-  purchaseCode       String         @unique @map("purchase_code")
+  id                 String        @id @default(cuid())
+  orderNumber        String        @unique
+  purchaseCode       String        @unique @map("purchase_code")
   clientId           String
   assignedToId       String?
-  status             OrderStatus    @default(PENDING)
-  paymentStatus      PaymentStatus  @default(NOT_PAID) @map("payment_status")
-  tinNumber          String?        @map("tin_number")
-  groupId            String?        @map("group_order_id")
-  truckCapacity      TruckCapacity? @map("truck_capacity")
+  tripId             String?       @map("trip_id")
+  status             OrderStatus   @default(PENDING)
+  paymentStatus      PaymentStatus @default(UNPAID) @map("payment_status")
+  amountDue          Decimal?      @db.Decimal(12, 2) @map("amount_due")
+  amountPaid         Decimal       @default(0) @db.Decimal(12, 2) @map("amount_paid")
+  tinNumber          String?       @map("tin_number")
+  companyName        String?       @map("company_name")
+  groupId            String?       @map("group_order_id")
+  truckCapacity      String?       @map("truck_capacity")
   notes              String?
   deliveryAddress    String
   deliveryLat        Float?
@@ -121,31 +140,53 @@ model Order {
   preferredDate      DateTime
   preferredTime      String
   cancellationReason String?
-  isGuestOrder       Boolean        @default(false)
+  isGuestOrder       Boolean       @default(false)
   guestPhone         String?
   syncedAt           DateTime?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
-  client        User                 @relation("ClientOrders", fields: [clientId], references: [id])
-  assignedTo    User?                @relation("AssignedOrders", fields: [assignedToId], references: [id])
-  group         OrderGroup?          @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  items         OrderItem[]
-  statusHistory OrderStatusHistory[]
-  notifications Notification[]
+  client         User                 @relation("ClientOrders", fields: [clientId], references: [id])
+  assignedTo     User?                @relation("AssignedOrders", fields: [assignedToId], references: [id])
+  group          OrderGroup?          @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  trip           DeliveryTrip?        @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+  paymentHistory PaymentHistory[]
+  notifications  Notification[]
 
   @@index([status, createdAt])
   @@index([paymentStatus, createdAt])
   @@index([groupId])
+  @@index([tripId])
   @@index([deliveryLat, deliveryLng])
   @@map("orders")
+}
+
+model PaymentHistory {
+  id          String         @id @default(cuid())
+  orderId     String
+  recordedBy  String
+  oldStatus   PaymentStatus?
+  newStatus   PaymentStatus
+  method      PaymentMethod?
+  amountPaid  Decimal        @db.Decimal(12, 2) @map("amount_paid")
+  reference   String?
+  note        String?
+  createdAt   DateTime       @default(now())
+
+  order    Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  recorder User  @relation(fields: [recordedBy], references: [id])
+
+  @@index([orderId, createdAt])
+  @@map("payment_history")
 }
 
 model OrderGroup {
   id            String         @id @default(cuid())
   reference     String         @unique
   type          OrderGroupType
-  truckCapacity TruckCapacity? @map("truck_capacity")
+  truckCapacity String?        @map("truck_capacity")
   dispatchedAt  DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -154,6 +195,43 @@ model OrderGroup {
 
   @@index([type, createdAt])
   @@map("order_groups")
+}
+
+model Truck {
+  id          String      @id @default(cuid())
+  plateNumber String      @unique @map("plate_number")
+  name        String
+  capacityKg  Int         @map("capacity_kg")
+  status      TruckStatus @default(AVAILABLE)
+  driverId    String?     @map("driver_id")
+  isActive    Boolean     @default(true) @map("is_active")
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  trips DeliveryTrip[]
+
+  @@index([status])
+  @@map("trucks")
+}
+
+model DeliveryTrip {
+  id          String    @id @default(cuid())
+  reference   String    @unique
+  truckId     String    @map("truck_id")
+  driverId    String?   @map("driver_id")
+  departsAt   DateTime? @map("departs_at")
+  completedAt DateTime? @map("completed_at")
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  truck  Truck  @relation(fields: [truckId], references: [id])
+  driver User?  @relation(fields: [driverId], references: [id])
+  orders Order[]
+
+  @@index([truckId, completedAt])
+  @@map("delivery_trips")
 }
 
 model AppSetting {
@@ -205,6 +283,7 @@ model OrderStatusHistory {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [changedBy], references: [id])
 
+  @@index([orderId, createdAt])
   @@map("order_status_history")
 }
 
@@ -222,5 +301,6 @@ model Notification {
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   order Order? @relation(fields: [orderId], references: [id])
 
+  @@index([userId, isRead])
   @@map("notifications")
 }
