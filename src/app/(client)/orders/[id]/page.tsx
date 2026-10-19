@@ -1,185 +1,231 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { ArrowLeft, MapPin, Calendar, RotateCcw, AlertTriangle } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { MapPin, Calendar, Printer, Phone } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { StatusBadge } from '@/components/ui/Badge'
-import { StatusTracker } from '@/components/orders/StatusTracker'
-import { OrderCardSkeleton } from '@/components/ui/Skeleton'
-import { getProductIcon } from '@/components/icons/ProductIcons'
-import { PRODUCT_LABELS } from '@/lib/order-utils'
+import { StatusBadge, PaymentBadge } from '@/components/ui/Badge'
+import { PRODUCT_LABELS, ORDER_STATUS_LABELS } from '@/lib/order-utils'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import type { OrderWithDetails } from '@/types'
-import { toast } from 'sonner'
+
+const STATUS_STEPS = [
+  { key: 'PENDING', label: 'Placed' },
+  { key: 'CONFIRMED', label: 'Confirmed' },
+  { key: 'PROCESSING', label: 'Processing' },
+  { key: 'OUT_FOR_DELIVERY', label: 'Out for delivery' },
+  { key: 'DELIVERED', label: 'Delivered' },
+] as const
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const router = useRouter()
+  const t = useTranslations('tracking')
+  const tOrder = useTranslations('order')
+  const tCommon = useTranslations('common')
+  const tPayment = useTranslations('payment')
   const [order, setOrder] = useState<OrderWithDetails | null>(null)
   const [loading, setLoading] = useState(true)
-  const [cancelling, setCancelling] = useState(false)
-  const [showCancelModal, setShowCancelModal] = useState(false)
-  const [cancelReason, setCancelReason] = useState('')
 
   useEffect(() => {
-    fetch(`/api/orders/${id}`)
+    const controller = new AbortController()
+    fetch(`/api/orders/${id}`, { signal: controller.signal })
       .then((r) => r.json())
-      .then((d) => setOrder(d.data))
-      .catch(console.error)
+      .then((d) => setOrder(d.data ?? null))
+      .catch((err) => { if (err.name !== 'AbortError') setOrder(null) })
       .finally(() => setLoading(false))
+    return () => controller.abort()
   }, [id])
 
-  if (loading) return <div className="space-y-3 pt-4"><OrderCardSkeleton /><OrderCardSkeleton /></div>
-  if (!order) return <div className="text-center py-16 text-navy-400">Order not found</div>
+  if (loading) return <div className="py-16 text-center text-navy-400">{tCommon('loading')}</div>
+  if (!order) return <div className="py-16 text-center text-navy-400">{tOrder('notFound')}</div>
+
+  const currentStepIndex = STATUS_STEPS.findIndex((step) => step.key === order.status)
+  const progress = Math.max(0, (currentStepIndex + 1) / STATUS_STEPS.length) * 100
 
   return (
-    <div className="space-y-5 max-w-2xl mx-auto">
-      <div className="flex items-center gap-3">
-        <button onClick={() => router.back()} className="p-2 rounded-xl hover:bg-navy-50 text-navy-600 transition-colors">
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <h1 className="font-display text-xl font-bold text-navy-900">Order Details</h1>
-          <p className="text-xs text-navy-400 font-mono">{order.orderNumber}</p>
-        </div>
-        <div className="ml-auto">
-          <StatusBadge status={order.status} />
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50 py-6 px-4">
+      <div className="max-w-2xl mx-auto space-y-4">
+        <h1 className="text-2xl font-semibold text-navy-900">{t('title')}</h1>
 
-      <Card>
-        <h2 className="font-display font-semibold text-navy-800 mb-4">Order Progress</h2>
-        <StatusTracker status={order.status} />
-      </Card>
-
-      <Card>
-        <h2 className="font-display font-semibold text-navy-800 mb-3">Items Ordered</h2>
-        <div className="space-y-3">
-          {order.items.map((item) => (
-            <div key={item.id} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center text-navy-700">
-                {getProductIcon(item.product, { size: 24 })}
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-navy-900">{PRODUCT_LABELS[item.product]}</p>
-                <p className="text-sm text-navy-400">Quantity: {item.quantity}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card>
-        <h2 className="font-display font-semibold text-navy-800 mb-3">Delivery Details</h2>
-        <div className="space-y-3">
-          <div className="flex items-start gap-2 text-sm">
-            <MapPin size={16} className="text-ember-700 shrink-0 mt-0.5" />
-            <span className="text-navy-700">{order.deliveryAddress}</span>
+        <Card className="p-5">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              placeholder={t('orderNumberPlaceholder')}
+              className="flex-1 h-11 px-4 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500"
+            />
+            <Button className="h-11 px-6">{t('trackButton')}</Button>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Calendar size={16} className="text-ember-700 shrink-0" />
-            <span className="text-navy-700">{formatDate(order.preferredDate)} at {order.preferredTime}</span>
-          </div>
-          {order.notes && (
-            <div className="mt-2 p-3 bg-navy-50 rounded-xl text-sm text-navy-600">
-              {order.notes}
-            </div>
-          )}
-        </div>
-      </Card>
+        </Card>
 
-      {order.statusHistory.length > 0 && (
-        <Card>
-          <h2 className="font-display font-semibold text-navy-800 mb-3">Activity Log</h2>
-          <div className="space-y-3">
-            {order.statusHistory.map((h) => (
-              <div key={h.id} className="flex items-start gap-3 text-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-ember-600 mt-2 shrink-0" />
+        <Card className="p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-sm text-gray-500">{tOrder('orderNumber')}</p>
+              <p className="font-mono text-lg font-semibold text-navy-900">{order.orderNumber}</p>
+            </div>
+            <StatusBadge status={order.status} />
+          </div>
+          <p className="text-sm text-gray-500 mt-3">{t('placedOn')} {formatDate(order.createdAt)}</p>
+          <div className="flex gap-2 mt-4">
+            <Button size="sm" variant="outline" className="h-9">
+              <Printer size={16} className="mr-2" />
+              {t('print')}
+            </Button>
+          </div>
+        </Card>
+
+        <Card className="p-5">
+          <h2 className="text-base font-semibold text-navy-900 mb-4">{t('deliveryProgress')}</h2>
+          <div className="relative">
+            <div className="h-1 bg-gray-200 rounded-full">
+              <div className="h-1 bg-ember-600 rounded-full transition-all" style={{ width: `${progress}%` }} />
+            </div>
+            <div className="flex justify-between mt-4">
+              {STATUS_STEPS.map((step, index) => {
+                const isCompleted = index <= currentStepIndex
+                const isCurrent = index === currentStepIndex
+                return (
+                  <div key={step.key} className="flex flex-col items-center flex-1">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                        isCompleted ? 'bg-ember-600 text-white' : 'bg-gray-200 text-gray-500'
+                      }`}
+                    >
+                      {index + 1}
+                    </div>
+                    <p className={`text-xs mt-2 text-center ${isCurrent ? 'font-medium text-navy-900' : 'text-gray-500'}`}>
+                      {t(step.key)}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <p className="text-sm text-gray-500 mt-4">{t('estimatedDelivery')} {formatDate(order.preferredDate)}</p>
+        </Card>
+
+        {order.statusHistory.length > 0 && (
+          <Card className="p-5">
+            <h2 className="text-base font-semibold text-navy-900 mb-4">{t('timeline')}</h2>
+            <div className="space-y-4">
+              {order.statusHistory.slice().reverse().map((h, index) => {
+                const isLatest = index === 0
+                return (
+                  <div key={h.id} className="flex gap-3">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-3 h-3 rounded-full ${isLatest ? 'bg-ember-600' : 'bg-gray-300'}`} />
+                      {index < order.statusHistory.length - 1 && <div className="w-px h-full bg-gray-200 mt-1" />}
+                    </div>
+                    <div className="flex-1 pb-4">
+                      <p className={`text-sm font-medium ${isLatest ? 'text-navy-900' : 'text-gray-600'}`}>
+                        {ORDER_STATUS_LABELS[h.newStatus] ?? h.newStatus.replace(/_/g, ' ')}
+                      </p>
+                      {h.reason && <p className="text-sm text-gray-500 mt-1">{h.reason}</p>}
+                      <p className="text-xs text-gray-400 mt-1">{formatDateTime(h.createdAt)}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </Card>
+        )}
+
+        {(order.assignedTo || order.truckCapacity) && (
+          <Card className="p-5">
+            <h2 className="text-base font-semibold text-navy-900 mb-4">{t('deliveryInfo')}</h2>
+            <div className="space-y-3">
+              {order.assignedTo && (
                 <div>
-                  <p className="text-navy-800 font-medium">{h.newStatus.replace(/_/g, ' ')}</p>
-                  {h.reason && <p className="text-navy-500 text-xs">{h.reason}</p>}
-                  <p className="text-navy-400 text-xs">{formatDateTime(h.createdAt)}</p>
+                  <p className="text-sm text-gray-500">{t('assignedStaff')}</p>
+                  <p className="text-sm font-medium text-navy-900">{order.assignedTo.name}</p>
+                  {order.assignedTo.phone && <p className="text-sm text-gray-600">{order.assignedTo.phone}</p>}
                 </div>
+              )}
+              {order.truckCapacity && (
+                <div>
+                  <p className="text-sm text-gray-500">{t('truckCapacity')}</p>
+                  <p className="text-sm font-medium text-navy-900">{order.truckCapacity.replace(/_/g, ' ')}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-gray-500">{t('estimatedDelivery')}</p>
+                <p className="text-sm font-medium text-navy-900">{formatDate(order.preferredDate)} · {order.preferredTime}</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        <Card className="p-5">
+          <h2 className="text-base font-semibold text-navy-900 mb-4">{tOrder('product')}</h2>
+          <div className="space-y-3">
+            {order.items.map((item) => (
+              <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                <div>
+                  <p className="text-sm font-medium text-navy-900">{PRODUCT_LABELS[item.product]}</p>
+                  <p className="text-sm text-gray-500">{tOrder('quantity')}: {item.quantity}</p>
+                </div>
+                <p className="text-sm font-medium text-navy-900">
+                  {item.unitPrice ? new Intl.NumberFormat('rw-RW', { style: 'currency', currency: 'RWF', maximumFractionDigits: 0 }).format(item.unitPrice * item.quantity) : '-'}
+                </p>
               </div>
             ))}
           </div>
         </Card>
-      )}
 
-      <div className="flex gap-3 pb-4">
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={() => {
-            router.push(`/order/new?reorder=${order.id}`)
-          }}
-        >
-          <RotateCcw size={16} />
-          Reorder
-        </Button>
-        {(order.status === 'PENDING' || order.status === 'CONFIRMED') && (
-          <Button
-            variant="danger"
-            className="flex-1"
-            onClick={() => setShowCancelModal(true)}
-          >
-            <AlertTriangle size={16} />
-            Cancel Order
-          </Button>
-        )}
-      </div>
-
-      {showCancelModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-3xl p-6 w-full max-w-sm"
-          >
-            <h3 className="font-display text-lg font-bold text-navy-900 mb-2">Cancel Order</h3>
-            <p className="text-sm text-navy-500 mb-4">Please tell us why you want to cancel this order.</p>
-            <textarea
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="Reason for cancellation..."
-              className="w-full rounded-xl border-2 border-navy-200 p-3 text-navy-900 text-sm focus:outline-none focus:border-ember-700 resize-none mb-4"
-              rows={3}
-            />
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={() => setShowCancelModal(false)}>
-                Keep Order
-              </Button>
-              <Button
-                variant="danger"
-                className="flex-1"
-                loading={cancelling}
-                disabled={!cancelReason.trim()}
-                onClick={async () => {
-                  setCancelling(true)
-                  try {
-                    const res = await fetch(`/api/orders/${order.id}`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ status: 'CANCELLED', reason: cancelReason }),
-                    })
-                    if (res.ok) {
-                      toast.success('Order cancelled')
-                      router.push('/orders')
-                    }
-                  } finally {
-                    setCancelling(false)
-                    setShowCancelModal(false)
-                  }
-                }}
-              >
-                Yes, Cancel
-              </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card className="p-5">
+            <h2 className="text-base font-semibold text-navy-900 mb-3">{tOrder('location')}</h2>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2">
+                <MapPin size={16} className="text-gray-400 shrink-0 mt-0.5" />
+                <p className="text-sm text-gray-700">{order.deliveryAddress}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar size={16} className="text-gray-400 shrink-0" />
+                <p className="text-sm text-gray-700">{formatDate(order.preferredDate)} · {order.preferredTime}</p>
+              </div>
             </div>
-          </motion.div>
+          </Card>
+
+          <Card className="p-5">
+            <h2 className="text-base font-semibold text-navy-900 mb-3">{tPayment('method')}</h2>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <p className="text-sm text-gray-500">{tPayment('status')}</p>
+                <PaymentBadge status={order.paymentStatus} />
+              </div>
+              <div className="flex justify-between">
+                <p className="text-sm text-gray-500">{t('amountDue')}</p>
+                <p className="text-sm font-medium text-navy-900">
+                  {order.amountDue != null ? new Intl.NumberFormat('rw-RW', { style: 'currency', currency: 'RWF', maximumFractionDigits: 0 }).format(order.amountDue) : '-'}
+                </p>
+              </div>
+              <div className="flex justify-between">
+                <p className="text-sm text-gray-500">{t('amountPaid')}</p>
+                <p className="text-sm font-medium text-navy-900">
+                  {new Intl.NumberFormat('rw-RW', { style: 'currency', currency: 'RWF', maximumFractionDigits: 0 }).format(order.amountPaid)}
+                </p>
+              </div>
+            </div>
+          </Card>
         </div>
-      )}
+
+        <Card className="p-5">
+          <h2 className="text-base font-semibold text-navy-900 mb-3">{t('needHelp')}</h2>
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <p className="text-sm text-gray-600">{t('contactSupport')}</p>
+              <p className="text-sm font-medium text-navy-900 mt-1">+250 788 123 456</p>
+            </div>
+            <Button size="sm" className="h-9">
+              <Phone size={16} className="mr-2" />
+              {t('contact')}
+            </Button>
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }

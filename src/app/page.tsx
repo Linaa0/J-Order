@@ -16,7 +16,7 @@ const languages = [
 function getRedirectPath(role: string | undefined) {
   if (role === 'ADMIN') return '/admin/dashboard'
   if (role === 'ORDER_STAFF' || role === 'TECHNICIAN') return '/staff/dashboard'
-  return '/orders'
+  return '/'
 }
 
 export default function HomePage() {
@@ -155,7 +155,7 @@ export default function HomePage() {
             className="text-center text-white z-10"
           >
             <GearLogo dark animated layout="stacked" className="mb-4" iconClassName="h-14 w-[4.5rem]" wordmarkClassName="text-3xl" />
-            <p className="text-navy-300 text-sm">Loading...</p>
+            <p className="text-navy-300 text-sm">{t('loading')}</p>
           </motion.div>
         )}
 

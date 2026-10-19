@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const to = params.get('to')
   const where = {
     ...(status ? { status: status as OrderStatus } : {}),
-    ...(paymentStatus ? { paymentStatus: paymentStatus as 'PAID' | 'NOT_PAID' } : {}),
+    ...(paymentStatus ? { paymentStatus: paymentStatus as 'PAID' | 'UNPAID' | 'PARTIAL' } : {}),
     ...(from || to ? { createdAt: { ...(from ? { gte: new Date(from) } : {}), ...(to ? { lte: new Date(`${to}T23:59:59.999`) } : {}) } } : {}),
     ...(search ? { OR: [
       { orderNumber: { contains: search, mode: 'insensitive' as const } },

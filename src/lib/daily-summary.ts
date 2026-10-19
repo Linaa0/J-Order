@@ -53,7 +53,7 @@ export async function buildDailySummary(date: Date) {
   }
 }
 
-export function formatDailySummary(summary: Awaited<ReturnType<typeof buildDailySummary>>) {
+export function formatDailySummary(summary: Awaited<ReturnType<typeof buildDailySummary>>, t: (key: string) => string) {
   const statusLines = Object.entries(summary.statusCounts).filter(([, count]) => count > 0).map(([status, count]) => `${status.replaceAll('_', ' ')}: ${count}`)
   const productLines = Object.entries(summary.productTotals).filter(([, quantity]) => quantity > 0).map(([product, quantity]) => `${summary.productLabels[product as ProductCategory]}: ${quantity}`)
   return [
@@ -61,8 +61,8 @@ export function formatDailySummary(summary: Awaited<ReturnType<typeof buildDaily
     `Orders placed: ${summary.totalOrders}`,
     `Paid: ${summary.paidOrders}   Not paid: ${summary.unpaidOrders}`,
     'Orders by status:',
-    ...(statusLines.length ? statusLines : ['No orders']),
+    ...(statusLines.length ? statusLines : [t('noOrders')]),
     'Quantity by product:',
-    ...(productLines.length ? productLines : ['No items']),
+    ...(productLines.length ? productLines : [t('noItems')]),
   ].join('\n')
 }

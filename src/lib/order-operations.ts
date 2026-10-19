@@ -1,4 +1,4 @@
-import type { ProductCategory, TruckCapacity } from '@prisma/client'
+import type { ProductCategory } from '@prisma/client'
 
 export const PRODUCT_WEIGHT_KG: Record<ProductCategory, number> = {
   GAS_REFILL: 12,
@@ -8,20 +8,20 @@ export const PRODUCT_WEIGHT_KG: Record<ProductCategory, number> = {
   CYLINDER_38KG: 38,
 }
 
-export const TRUCK_CAPACITY_KG: Record<TruckCapacity, number> = {
-  TWO_TONNES: 2000,
-  THREE_AND_HALF_TONNES: 3500,
-  FOUR_AND_HALF_TONNES: 4500,
+export const TRUCK_CAPACITY_KG: Record<string, number> = {
+  'TWO_TONNES': 2000,
+  'THREE_AND_HALF_TONNES': 3500,
+  'FOUR_AND_HALF_TONNES': 4500,
 }
 
 export function calculateOrderWeight(items: Array<{ product: ProductCategory; quantity: number }>) {
   return items.reduce((total, item) => total + PRODUCT_WEIGHT_KG[item.product] * item.quantity, 0)
 }
 
-export function suggestTruckCapacity(weightKg: number): TruckCapacity | null {
-  if (weightKg <= TRUCK_CAPACITY_KG.TWO_TONNES) return 'TWO_TONNES'
-  if (weightKg <= TRUCK_CAPACITY_KG.THREE_AND_HALF_TONNES) return 'THREE_AND_HALF_TONNES'
-  if (weightKg <= TRUCK_CAPACITY_KG.FOUR_AND_HALF_TONNES) return 'FOUR_AND_HALF_TONNES'
+export function suggestTruckCapacity(weightKg: number): string | null {
+  if (weightKg <= TRUCK_CAPACITY_KG['TWO_TONNES']) return 'TWO_TONNES'
+  if (weightKg <= TRUCK_CAPACITY_KG['THREE_AND_HALF_TONNES']) return 'THREE_AND_HALF_TONNES'
+  if (weightKg <= TRUCK_CAPACITY_KG['FOUR_AND_HALF_TONNES']) return 'FOUR_AND_HALF_TONNES'
   return null
 }
 

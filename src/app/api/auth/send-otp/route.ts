@@ -44,8 +44,13 @@ function getMessagingConfig() {
 
 async function sendEmailOtp(email: string, otp: string) {
   const { emailApiKey, emailFrom } = getMessagingConfig()
+  const isDev = process.env.NODE_ENV !== 'production'
 
   if (!emailApiKey || !emailFrom) {
+    if (isDev) {
+      console.log(`[DEV MODE] Email delivery not configured. OTP for ${email}: ${otp}`)
+      return
+    }
     throw new Error('Email delivery is not configured. Add RESEND_API_KEY and RESEND_FROM in .env.local or the runtime environment.')
   }
 
@@ -68,21 +73,34 @@ async function sendEmailOtp(email: string, otp: string) {
     })
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Unknown network error'
-    throw new Error(`Could not reach Resend to send the email. Check the internet connection and try again. ${detail}`)
+    console.error('[Send OTP] Email delivery network error:', detail)
+    if (isDev) {
+      console.log(`[DEV MODE] Email delivery failed. OTP for ${email}: ${otp}`)
+      return
+    }
+    throw new Error('Could not send the code. Please check your internet connection and try again.')
   }
 
   if (!res.ok) {
     const detail = await res.text()
-    throw new Error(
-      `Resend rejected the email request (HTTP ${res.status}). Check that RESEND_FROM uses a sender on a domain verified in Resend and that the API key is active. Provider response: ${detail}`
-    )
+    console.error('[Send OTP] Email delivery rejected:', detail)
+    if (isDev) {
+      console.log(`[DEV MODE] Email delivery failed. OTP for ${email}: ${otp}`)
+      return
+    }
+    throw new Error('Could not send the code. Please try again or use another method.')
   }
 }
 
 async function sendSmsOtp(phone: string, otp: string) {
   const { atApiKey, atUsername, atSmsSender } = getMessagingConfig()
+  const isDev = process.env.NODE_ENV !== 'production'
 
   if (!atApiKey || !atUsername || !atSmsSender) {
+    if (isDev) {
+      console.log(`[DEV MODE] SMS delivery not configured. OTP for ${phone}: ${otp}`)
+      return
+    }
     throw new Error('SMS delivery is not configured. Add AT_API_KEY, AT_USERNAME, and AT_SENDER_ID in .env.local or the runtime environment.')
   }
 
@@ -101,14 +119,24 @@ async function sendSmsOtp(phone: string, otp: string) {
     }), 'SMS')
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Provider request failed.'
-    throw new Error(`SMS delivery failed. ${detail}`)
+    console.error('[Send OTP] SMS delivery error:', detail)
+    if (isDev) {
+      console.log(`[DEV MODE] SMS delivery failed. OTP for ${phone}: ${otp}`)
+      return
+    }
+    throw new Error('Could not send the code. Please try again or use another method.')
   }
 
   const recipients = (response as {
     SMSMessageData?: { Recipients?: Array<{ status?: string; statusCode?: number; number?: string }> }
   })?.SMSMessageData?.Recipients
   if (!recipients?.length || recipients.some((recipient) => recipient.statusCode !== 101 || recipient.status !== 'Success')) {
-    throw new Error('SMS delivery failed. Africa\'s Talking did not accept the message for delivery.')
+    console.error('[Send OTP] SMS delivery rejected by provider')
+    if (isDev) {
+      console.log(`[DEV MODE] SMS delivery failed. OTP for ${phone}: ${otp}`)
+      return
+    }
+    throw new Error('Could not send the code. Please try again or use another method.')
   }
 
   return response
@@ -116,8 +144,13 @@ async function sendSmsOtp(phone: string, otp: string) {
 
 async function sendWhatsAppOtp(phone: string, otp: string) {
   const { atApiKey, atUsername, atWhatsappNumber } = getMessagingConfig()
+  const isDev = process.env.NODE_ENV !== 'production'
 
   if (!atApiKey || !atUsername || !atWhatsappNumber) {
+    if (isDev) {
+      console.log(`[DEV MODE] WhatsApp delivery not configured. OTP for ${phone}: ${otp}`)
+      return
+    }
     throw new Error('WhatsApp delivery is not configured. Add AT_API_KEY, AT_USERNAME, and AT_WHATSAPP_NUMBER in .env.local or the runtime environment.')
   }
 
@@ -138,7 +171,12 @@ async function sendWhatsAppOtp(phone: string, otp: string) {
   }).WHATSAPP
 
   if (!whatsapp) {
-    throw new Error('WhatsApp delivery is not supported by the configured Africa\'s Talking client.')
+    console.error('[Send OTP] WhatsApp not supported by Africa\'s Talking client')
+    if (isDev) {
+      console.log(`[DEV MODE] WhatsApp delivery failed. OTP for ${phone}: ${otp}`)
+      return
+    }
+    throw new Error('Could not send the code. Please try again or use another method.')
   }
 
   let response: unknown
@@ -150,7 +188,12 @@ async function sendWhatsAppOtp(phone: string, otp: string) {
     }), 'WhatsApp')
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Provider request failed.'
-    throw new Error(`WhatsApp delivery failed. ${detail}`)
+    console.error('[Send OTP] WhatsApp delivery error:', detail)
+    if (isDev) {
+      console.log(`[DEV MODE] WhatsApp delivery failed. OTP for ${phone}: ${otp}`)
+      return
+    }
+    throw new Error('Could not send the code. Please try again or use another method.')
   }
 
   return response
@@ -312,7 +355,8 @@ export async function POST(req: NextRequest) {
       message.includes('SMS delivery failed') ||
       message.includes('WhatsApp delivery failed')
     ) {
-      return NextResponse.json({ error: message }, { status: 503 })
+      console.error('[Send OTP] Provider error:', message)
+      return NextResponse.json({ error: 'Could not send the code. Please try again or use another method.' }, { status: 503 })
     }
 
     return NextResponse.json({ error: 'Failed to send code. Please try again or choose another delivery method.' }, { status: 500 })

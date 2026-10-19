@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from 'next-intl'
+import { GearLogo } from '@/components/branding/GearLogo'
 
 export default function GlobalError({
   reset,
@@ -6,8 +8,10 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const t = useTranslations('errors')
+
   return (
-    <html>
+    <html lang="en">
       <body
         style={{
           minHeight: '100vh',
@@ -22,17 +26,17 @@ export default function GlobalError({
         }}
       >
         <div>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔥</div>
+          <GearLogo dark className="mx-auto mb-6 opacity-90" iconClassName="h-14 w-[4.5rem]" wordmarkClassName="text-3xl" />
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-            Something went wrong
+            {t('generic')}
           </h1>
           <p style={{ color: '#7881ca', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            An unexpected error occurred. Our team has been notified.
+            {t('errorDescription')}
           </p>
           <button
             onClick={reset}
             style={{
-              background: 'linear-gradient(135deg, #ffa000, #f97316, #ea580c)',
+              background: '#f59e0b',
               color: 'white',
               border: 'none',
               borderRadius: '0.75rem',
@@ -42,7 +46,7 @@ export default function GlobalError({
               cursor: 'pointer',
             }}
           >
-            Try Again
+            {t('retry')}
           </button>
         </div>
       </body>

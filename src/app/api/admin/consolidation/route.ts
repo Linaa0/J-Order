@@ -40,26 +40,26 @@ export async function POST(req: NextRequest) {
   if (session?.user?.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const body = await req.json()
   const orderIds = Array.isArray(body.orderIds) ? [...new Set(body.orderIds.filter((id: unknown) => typeof id === 'string'))] as string[] : []
-  if (orderIds.length < 2) return NextResponse.json({ error: 'Select at least two orders' }, { status: 400 })
+  if (orderIds.length < 2) return NextResponse.json({ error: 'selectAtLeastTwoOrders' }, { status: 400 })
   const [settings, orders] = await Promise.all([
     prisma.appSetting.upsert({ where: { id: 1 }, create: { id: 1 }, update: {} }),
     prisma.order.findMany({ where: { id: { in: orderIds }, status: 'AWAITING_CONSOLIDATION', groupId: null }, include: { items: true } }),
   ])
-  if (orders.length !== orderIds.length) return NextResponse.json({ error: 'Some selected orders are no longer awaiting consolidation' }, { status: 409 })
+  if (orders.length !== orderIds.length) return NextResponse.json({ error: 'orders_no_longer_awaiting_consolidation' }, { status: 409 })
   if (orders.some((order) => order.deliveryLat == null || order.deliveryLng == null)) {
-    return NextResponse.json({ error: 'Every order needs map coordinates before it can be consolidated' }, { status: 422 })
+    return NextResponse.json({ error: 'orders_need_map_coordinates' }, { status: 422 })
   }
   const points = orders.map((order) => ({ lat: order.deliveryLat!, lng: order.deliveryLng! }))
   const furthestDistance = Math.max(...points.flatMap((point, index) => points.slice(index + 1).map((other) => distanceKm(point, other))))
   if (furthestDistance > settings.maxConsolidationDistanceKm) {
-    return NextResponse.json({ error: `Selected orders are ${furthestDistance.toFixed(1)} km apart, beyond the ${settings.maxConsolidationDistanceKm} km limit` }, { status: 422 })
+    return NextResponse.json({ error: 'orders_too_far_apart' }, { status: 422 })
   }
   const weightKg = orders.reduce((sum, order) => sum + calculateOrderWeight(order.items), 0)
   const suggested = suggestTruckCapacity(weightKg)
   const capacity = body.truckCapacity || suggested
-  if (!capacity || !(capacity in TRUCK_CAPACITY_KG)) return NextResponse.json({ error: 'Choose a truck capacity for this load' }, { status: 400 })
+  if (!capacity || !(capacity in TRUCK_CAPACITY_KG)) return NextResponse.json({ error: 'choose_truck_capacity_error' }, { status: 400 })
   if (weightKg > TRUCK_CAPACITY_KG[capacity as keyof typeof TRUCK_CAPACITY_KG]) {
-    return NextResponse.json({ error: 'The selected truck is too small for this load' }, { status: 422 })
+    return NextResponse.json({ error: 'truck_too_small_for_load' }, { status: 422 })
   }
   const group = await prisma.$transaction(async (tx) => {
     const createdGroup = await tx.orderGroup.create({ data: { reference: `CON${Date.now().toString(36).toUpperCase()}`, type: 'CONSOLIDATION', truckCapacity: capacity } })

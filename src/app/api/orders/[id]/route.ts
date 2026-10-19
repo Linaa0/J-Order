@@ -11,7 +11,7 @@ const statusUpdateSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'COMPLETED', 'CANCELLED']),
   reason: z.string().max(500).optional(),
   assignedToId: z.string().optional(),
-  truckCapacity: z.enum(['TWO_TONNES', 'THREE_AND_HALF_TONNES', 'FOUR_AND_HALF_TONNES']).optional(),
+  truckCapacity: z.string().optional(),
 })
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {

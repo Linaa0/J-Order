@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -11,6 +12,8 @@ import { toast } from 'sonner'
 
 export default function VerifyPage() {
   const router = useRouter()
+  const t = useTranslations('auth')
+  const tApp = useTranslations('app')
   const [code, setCode] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
@@ -27,6 +30,7 @@ export default function VerifyPage() {
 
   const contact = stored.contact
   const contactType = stored.type
+  const isNewUser = typeof window !== 'undefined' ? sessionStorage.getItem('jorder_new_user') === 'true' : false
 
   useEffect(() => {
     if (!contact) {
@@ -78,15 +82,22 @@ export default function VerifyPage() {
         redirect: false,
       })
       if (result?.error) {
-        setError('Invalid or expired code. Please try again.')
+        setError(t('otpInvalid'))
         setCode(['', '', '', '', '', ''])
         inputs.current[0]?.focus()
       } else {
-        toast.success('Signed in successfully')
-        router.push('/')
+        // Store OTP for signup flow if needed
+        sessionStorage.setItem('jorder_otp', otp)
+        
+        if (isNewUser) {
+          router.push('/signup')
+        } else {
+          toast.success(t('successSignIn'))
+          router.push('/')
+        }
       }
     } catch {
-      setError('Something went wrong. Please try again.')
+      setError(t('errorGeneric'))
     } finally {
       setLoading(false)
     }
@@ -108,14 +119,14 @@ export default function VerifyPage() {
       })
       const data = await response.json()
       if (!response.ok) {
-        setError(data.error || 'Failed to resend. Please try again.')
+        setError(data.error || t('errorGeneric'))
         return
       }
 
       setCountdown(60)
-      toast.success(`New code sent via ${data.channel || 'your selected method'}`)
+      toast.success(t('codeSentVia', { channel: data.channel || t('viaSms') }))
     } catch {
-      setError('Failed to resend. Please try again.')
+      setError(t('errorGeneric'))
     } finally {
       setResending(false)
     }
@@ -133,14 +144,14 @@ export default function VerifyPage() {
           className="flex items-center gap-2 text-navy-300 hover:text-white mb-6 transition-colors"
         >
           <ArrowLeft size={18} />
-          <span>Back</span>
+          <span>{t('back')}</span>
         </button>
 
         <div className="text-center mb-8">
           <GearLogo dark className="mx-auto mb-4" iconClassName="h-10 w-14" wordmarkClassName="text-2xl" />
-          <h1 className="font-display text-3xl font-bold text-white mb-2">Enter Verification Code</h1>
+          <h1 className="font-display text-3xl font-bold text-white mb-2">{t('otpTitle')}</h1>
           <p className="text-navy-300 text-sm">
-            We sent a 6 digit code to{' '}
+            {t('otpSubtitle')}{' '}
             <span className="text-white font-medium">{contact}</span>
           </p>
         </div>
@@ -178,13 +189,13 @@ export default function VerifyPage() {
             }}
             disabled={code.join('').length < 6}
           >
-            Verify
+            {t('verify')}
           </Button>
 
           <div className="mt-4 text-center">
             {countdown > 0 ? (
               <p className="text-sm text-navy-400">
-                Resend code in <span className="text-navy-700 font-medium">{countdown}s</span>
+                {t('resendIn', { seconds: countdown })}
               </p>
             ) : (
               <button
@@ -192,9 +203,18 @@ export default function VerifyPage() {
                 disabled={resending}
                 className="text-sm text-ember-700 font-medium hover:text-ember-800 transition-colors disabled:opacity-50"
               >
-                {resending ? 'Sending...' : 'Resend Code'}
+                {resending ? t('resending') : t('resend')}
               </button>
             )}
+          </div>
+
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => router.push('/login')}
+              className="text-sm text-navy-500 hover:text-navy-700 transition-colors min-h-[44px]"
+            >
+              {t('changeContact')}
+            </button>
           </div>
         </div>
       </motion.div>

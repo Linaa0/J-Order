@@ -2,7 +2,8 @@
 import { motion } from 'framer-motion'
 import { Calendar, MapPin } from 'lucide-react'
 import Link from 'next/link'
-import { StatusBadge } from '@/components/ui/Badge'
+import { useTranslations } from 'next-intl'
+import { StatusBadge, PaymentBadge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import { PRODUCT_LABELS } from '@/lib/order-utils'
@@ -16,6 +17,8 @@ interface OrderCardProps {
 }
 
 export function OrderCard({ order, compact, onClick }: OrderCardProps) {
+  const t = useTranslations('order')
+  const ta = useTranslations('admin')
   const primaryItem = order.items[0]
   const label = primaryItem ? PRODUCT_LABELS[primaryItem.product] : 'Order'
   const extraCount = order.items.length - 1
@@ -34,32 +37,38 @@ export function OrderCard({ order, compact, onClick }: OrderCardProps) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1">
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-navy-900 truncate">
                     {label}
                     {extraCount > 0 && (
-                      <span className="text-navy-400 font-normal"> +{extraCount} more</span>
+                      <span className="text-navy-400 font-normal"> +{extraCount}</span>
                     )}
                   </p>
                   <p className="text-xs text-navy-400 font-mono">{order.orderNumber}</p>
-                  <p className="mt-1 text-xs text-navy-500">Purchase code {order.purchaseCode}</p>
+                  <p className="mt-0.5 text-xs text-navy-500">{t('purchaseCode')} {order.purchaseCode}</p>
                 </div>
                 <StatusBadge status={order.status} />
               </div>
               {!compact && (
-                <div className="space-y-1 mt-2">
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    <span className={`rounded-full px-2 py-0.5 font-medium ${order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>{order.paymentStatus === 'PAID' ? 'Paid' : 'Not paid'}</span>
-                    {order.group && <span className="rounded-full bg-ember-50 px-2 py-0.5 font-medium text-ember-800">{order.group.type === 'CUSTOMER_GROUP' ? 'Grouped order' : 'Consolidated delivery'} · {order.group.reference}</span>}
-                    {order.tinNumber && <span className="text-navy-500">TIN {order.tinNumber}</span>}
+                <div className="space-y-1.5 mt-2">
+                  <div className="flex flex-wrap gap-2">
+                    <PaymentBadge status={order.paymentStatus} />
+                    {order.group && (
+                      <span className="inline-flex rounded-full bg-navy-100 px-2 py-0.5 text-xs font-medium text-navy-700">
+                        {order.group.type === 'CUSTOMER_GROUP' ? ta('customerGroup') : ta('deliveryConsolidation')} · {order.group.reference}
+                      </span>
+                    )}
+                    {order.tinNumber && (
+                      <span className="text-xs text-navy-500 self-center">TIN {order.tinNumber}</span>
+                    )}
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-navy-500">
-                    <MapPin size={12} />
+                    <MapPin size={12} aria-hidden="true" />
                     <span className="truncate">{order.deliveryAddress}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-navy-500">
-                    <Calendar size={12} />
-                    <span>{formatDate(order.preferredDate)} at {order.preferredTime}</span>
+                    <Calendar size={12} aria-hidden="true" />
+                    <span>{formatDate(order.preferredDate)}</span>
                   </div>
                 </div>
               )}

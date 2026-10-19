@@ -18,6 +18,7 @@
     "db:studio": "prisma studio",
     "generate:icons": "node scripts/generate-icons.mjs",
     "app:run": "node scripts/run-app.js",
+    "db:reset": "ts-node --project tsconfig.seed.json scripts/reset-to-fresh.ts",
     "i18n:check": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
