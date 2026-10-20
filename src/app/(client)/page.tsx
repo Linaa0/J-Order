@@ -12,20 +12,53 @@ import { useSession } from 'next-auth/react'
 
 export default function ClientHomePage() {
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const t = useTranslations('common')
   const tOrder = useTranslations('order')
   const tNav = useTranslations('nav')
   const [orders, setOrders] = useState<OrderWithDetails[]>([])
   const [loading, setLoading] = useState(true)
 
+  const role = session?.user?.role
+
   useEffect(() => {
+    if (status === 'loading') return
+
+    if (status === 'unauthenticated' || !session?.user) {
+      router.replace('/login')
+      return
+    }
+
+    if (role === 'ADMIN') {
+      router.replace('/admin/dashboard')
+      return
+    }
+
+    if (role === 'ORDER_STAFF' || role === 'TECHNICIAN') {
+      router.replace('/staff/dashboard')
+      return
+    }
+
+    // Role is CLIENT (or default): stays on the client home at "/", no redirect to itself
     fetch('/api/orders')
       .then((r) => r.json())
       .then((d) => setOrders(d.data ?? []))
       .catch(() => setOrders([]))
       .finally(() => setLoading(false))
-  }, [])
+  }, [status, session, role, router])
+
+  if (status === 'loading' || status === 'unauthenticated' || !session?.user || (role && role !== 'CLIENT')) {
+    return (
+      <div className="space-y-6 animate-pulse" aria-busy="true">
+        <div className="space-y-2">
+          <div className="h-7 w-48 bg-gray-200 rounded" />
+          <div className="h-4 w-72 bg-gray-200 rounded" />
+        </div>
+        <div className="h-11 w-36 bg-gray-200 rounded-lg" />
+        <div className="h-32 w-full bg-white border border-gray-200 rounded-xl" />
+      </div>
+    )
+  }
 
   const activeOrder = orders.find((o) => o.status !== 'DELIVERED' && o.status !== 'CANCELLED')
   const recentOrders = orders.filter((o) => o.id !== activeOrder?.id).slice(0, 5)
@@ -35,7 +68,7 @@ export default function ClientHomePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-navy-900">
-            {session?.user?.name ? `Hello, ${session.user.name}` : t('welcome')}
+            {session?.user?.name ? `${t('welcome')}, ${session.user.name}` : t('welcome')}
           </h1>
           <p className="text-sm text-gray-600 mt-1">{tOrder('successMessage')}</p>
         </div>
@@ -51,7 +84,10 @@ export default function ClientHomePage() {
       </Button>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">{t('loading')}</div>
+        <div className="space-y-4 animate-pulse">
+          <div className="h-28 w-full bg-white border border-gray-200 rounded-xl" />
+          <div className="h-24 w-full bg-white border border-gray-200 rounded-xl" />
+        </div>
       ) : activeOrder ? (
         <>
           <div>
@@ -137,7 +173,10 @@ export default function ClientHomePage() {
           <Package size={48} className="mx-auto text-gray-300 mb-4" />
           <h2 className="text-lg font-semibold text-navy-900 mb-2">{tOrder('notFound')}</h2>
           <p className="text-sm text-gray-600 mb-4">{tOrder('successMessage')}</p>
-          <Button onClick={() => router.push('/order/new')}>
+          <Button
+            onClick={() => router.push('/order/new')}
+            className="bg-ember-600 hover:bg-ember-700 text-white"
+          >
             <Plus size={16} className="mr-2" />
             {tOrder('new')}
           </Button>
