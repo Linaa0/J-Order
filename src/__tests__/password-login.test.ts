@@ -1,6 +1,5 @@
 describe('Password Login (no OTP code path)', () => {
   it('allows login with correct credentials', () => {
-    const passwordHash = 'hashed_password'
     const inputPassword = 'correct_password'
     const isValid = inputPassword === 'correct_password'
     expect(isValid).toBe(true)
@@ -38,8 +37,6 @@ describe('Password Login (no OTP code path)', () => {
   })
 
   it('verifies password using bcrypt comparison', () => {
-    const hash = 'hashed_password'
-    const plain = 'password'
     // In real implementation, bcrypt.compare would be used
     const matches = true // Simulated match
     expect(matches).toBe(true)

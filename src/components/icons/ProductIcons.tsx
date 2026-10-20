@@ -82,20 +82,9 @@ export function Cylinder38KgIcon({ className, size = 48 }: IconProps) {
 export function FlameIcon({ className, size = 48 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-      <path d="M24 4 C20 12 14 16 16 26 C18 32 24 36 24 36 C24 36 30 32 32 26 C34 16 28 12 24 4Z" fill="url(#flame1)" opacity="0.9"/>
-      <path d="M24 16 C22 20 19 22 20 28 C21 31 24 33 24 33 C24 33 27 31 28 28 C29 22 26 20 24 16Z" fill="url(#flame2)"/>
-      <path d="M24 24 C23 26 22 27 22.5 29 C23 30.5 24 31 24 31 C24 31 25 30.5 25.5 29 C26 27 25 26 24 24Z" fill="white" opacity="0.7"/>
-      <defs>
-        <linearGradient id="flame1" x1="24" y1="4" x2="24" y2="36" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#ffa000"/>
-          <stop offset="0.6" stopColor="#f97316"/>
-          <stop offset="1" stopColor="#ea580c"/>
-        </linearGradient>
-        <linearGradient id="flame2" x1="24" y1="16" x2="24" y2="33" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#fff176"/>
-          <stop offset="1" stopColor="#ffa000"/>
-        </linearGradient>
-      </defs>
+      <path d="M24 4 C20 12 14 16 16 26 C18 32 24 36 24 36 C24 36 30 32 32 26 C34 16 28 12 24 4Z" fill="#ea580c"/>
+      <path d="M24 16 C22 20 19 22 20 28 C21 31 24 33 24 33 C24 33 27 31 28 28 C29 22 26 20 24 16Z" fill="#fb923c"/>
+      <path d="M24 24 C23 26 22 27 22.5 29 C23 30.5 24 31 24 31 C24 31 25 30.5 25.5 29 C26 27 25 26 24 24Z" fill="#ffffff" opacity="0.8"/>
     </svg>
   )
 }

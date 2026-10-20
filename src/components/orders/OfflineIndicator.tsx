@@ -12,7 +12,7 @@ export function OfflineIndicator() {
   const [justCameOnline, setJustCameOnline] = useState(false)
 
   const pendingOrders = useLiveQuery(
-    () => db.offlineOrders.where('synced').equals(0).count(),
+    () => db.offlineOrders.filter((o) => !o.synced).count(),
     []
   )
 
@@ -45,8 +45,12 @@ export function OfflineIndicator() {
           className="fixed top-16 inset-x-0 z-50 flex justify-center px-4 pt-2"
         >
           <div
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-lg ${
-              !isOnline ? 'bg-red-600 text-white' : justCameOnline ? 'bg-green-600 text-white' : 'bg-navy-700 text-white'
+            className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium border shadow-sm ${
+              !isOnline
+                ? 'bg-red-50 text-red-700 border-red-200'
+                : justCameOnline
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : 'bg-navy-50 text-navy-900 border-navy-200'
             }`}
           >
             {!isOnline ? (

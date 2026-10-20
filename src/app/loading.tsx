@@ -4,10 +4,10 @@ import { useTranslations } from 'next-intl'
 export default function LoadingPage() {
   const t = useTranslations('common')
   return (
-    <div className="min-h-screen bg-navy-gradient flex items-center justify-center">
-      <div className="text-center text-white">
-        <GearLogo dark animated layout="stacked" className="mb-5" iconClassName="h-14 w-[4.5rem]" wordmarkClassName="text-3xl" />
-        <p className="text-navy-300">{t('loading')}</p>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="text-center">
+        <GearLogo animated layout="stacked" className="mb-4" iconClassName="h-12 w-16" wordmarkClassName="text-3xl" />
+        <p className="text-gray-500 text-sm font-medium">{t('loading')}</p>
       </div>
     </div>
   )

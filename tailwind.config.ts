@@ -41,13 +41,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['"Inter"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         body: ['"Inter"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
-      backgroundImage: {
-        'ember-gradient': 'linear-gradient(135deg, #ffa000 0%, #f97316 50%, #ea580c 100%)',
-        'navy-gradient': 'linear-gradient(135deg, #060d40 0%, #0d1b5e 50%, #1a2a7c 100%)',
-      },
+      backgroundImage: {},
       animation: {
         'flame-flicker': 'flicker 2s ease-in-out infinite',
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',

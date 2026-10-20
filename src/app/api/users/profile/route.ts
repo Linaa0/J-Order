@@ -69,7 +69,7 @@ export async function PATCH(req: NextRequest) {
     const passwordHash = await bcrypt.hash(parsed.data.newPassword, 12)
     const updated = await prisma.user.update({
       where: { id: session.user.id },
-      data: { passwordHash },
+      data: { passwordHash, mustChangePassword: false },
       select: { id: true, phone: true, name: true, preferredLanguage: true, role: true },
     })
 
@@ -81,6 +81,7 @@ export async function PATCH(req: NextRequest) {
     data: {
       name: parsed.data.name,
       preferredLanguage: parsed.data.preferredLanguage,
+      isGuest: false,
     },
     select: { id: true, phone: true, name: true, preferredLanguage: true, role: true },
   })

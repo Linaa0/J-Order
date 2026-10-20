@@ -32,6 +32,8 @@ export default function StaffDashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const t = useTranslations('staff')
+  const tStatus = useTranslations('status')
+  const tp = useTranslations('products')
   const tCommon = useTranslations('common')
 
   const [orders, setOrders] = useState<OrderWithDetails[]>([])
@@ -108,10 +110,10 @@ export default function StaffDashboardPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-navy-900">{t('dashboard')}</h1>
-          <p className="text-sm text-navy-400">
+          <h1 className="font-body text-2xl font-bold text-navy-900">{t('dashboard')}</h1>
+          <p className="text-sm text-gray-500">
             {pendingCount > 0
-              ? <span className="text-navy-700 font-medium">{t('ordersWaiting', { count: pendingCount })}</span>
+              ? <span className="text-navy-900 font-medium">{t('ordersWaiting', { count: pendingCount })}</span>
               : t('allCaughtUp')}
           </p>
         </div>
@@ -126,22 +128,22 @@ export default function StaffDashboardPage() {
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           aria-label={t('filterByStatus')}
-          className="h-9 rounded-xl border-2 border-navy-200 px-3 text-sm text-navy-800 focus:outline-none focus:border-navy-800 bg-white shrink-0"
+          className="h-10 rounded-lg border border-gray-300 px-3 text-sm text-navy-900 focus:outline-none focus:border-navy-900 bg-white shrink-0"
         >
           <option value="">{t('allStatuses')}</option>
           {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>{ORDER_STATUS_LABELS[s]}</option>
+            <option key={s} value={s}>{tStatus.has(s) ? tStatus(s) : ORDER_STATUS_LABELS[s]}</option>
           ))}
         </select>
         <select
           value={productFilter}
           onChange={(e) => setProductFilter(e.target.value)}
           aria-label={t('filterByProduct')}
-          className="h-9 rounded-xl border-2 border-navy-200 px-3 text-sm text-navy-800 focus:outline-none focus:border-navy-800 bg-white shrink-0"
+          className="h-10 rounded-lg border border-gray-300 px-3 text-sm text-navy-900 focus:outline-none focus:border-navy-900 bg-white shrink-0"
         >
           <option value="">{t('allProducts')}</option>
           {PRODUCT_OPTIONS.map((p) => (
-            <option key={p} value={p}>{PRODUCT_LABELS[p]}</option>
+            <option key={p} value={p}>{tp.has(p) ? tp(p) : PRODUCT_LABELS[p]}</option>
           ))}
         </select>
       </div>
@@ -150,8 +152,8 @@ export default function StaffDashboardPage() {
       {loading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <OrderCardSkeleton key={i} />)}</div>
       ) : orders.length === 0 ? (
-        <div className="text-center py-12 text-navy-400">
-          <CheckCircle size={40} className="mx-auto mb-3 text-navy-300" aria-hidden="true" />
+        <div className="text-center py-12 text-gray-500">
+          <CheckCircle size={40} className="mx-auto mb-3 text-gray-300" aria-hidden="true" />
           <p className="font-medium">{t('noOrders')}</p>
         </div>
       ) : (
@@ -159,7 +161,7 @@ export default function StaffDashboardPage() {
           {orders.map((order) => (
             <motion.div key={order.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
               <Card
-                className="cursor-pointer hover:shadow-navy transition-shadow"
+                className="cursor-pointer hover:border-gray-400 transition-colors"
                 onClick={() => { setSelectedOrder(order); setNewStatus('') }}
                 role="button"
                 aria-label={`Order ${order.orderNumber}`}
@@ -168,22 +170,22 @@ export default function StaffDashboardPage() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-navy-50 flex items-center justify-center text-navy-700 shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-navy-900 shrink-0">
                       {order.items[0] && getProductIcon(order.items[0].product, { size: 22 })}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-navy-900 truncate">{order.client.name ?? order.client.phone}</p>
-                      <p className="text-xs text-navy-400 font-mono">{order.orderNumber}</p>
-                      <p className="text-xs text-navy-500 mt-0.5 truncate max-w-[220px]">{order.deliveryAddress}</p>
-                      <p className="text-xs text-navy-400">{formatDate(order.preferredDate)} · {order.preferredTime}</p>
+                      <p className="font-semibold text-navy-900 truncate text-sm">{order.client.name ?? order.client.phone}</p>
+                      <p className="text-xs text-gray-500 font-mono">{order.orderNumber}</p>
+                      <p className="text-xs text-gray-600 mt-0.5 truncate max-w-[220px]">{order.deliveryAddress}</p>
+                      <p className="text-xs text-gray-400">{formatDate(order.preferredDate)} · {order.preferredTime}</p>
                     </div>
                   </div>
                   <StatusBadge status={order.status} />
                 </div>
                 <div className="mt-3 flex flex-wrap gap-1">
                   {order.items.map((item) => (
-                    <span key={item.id} className="text-xs bg-navy-50 text-navy-600 rounded-lg px-2 py-0.5">
-                      {item.quantity}x {PRODUCT_LABELS[item.product]}
+                    <span key={item.id} className="text-xs bg-gray-100 text-navy-900 rounded-md px-2 py-0.5">
+                      {item.quantity}x {tp.has(item.product) ? tp(item.product as Parameters<typeof tp>[0]) : PRODUCT_LABELS[item.product]}
                     </span>
                   ))}
                 </div>
@@ -197,21 +199,21 @@ export default function StaffDashboardPage() {
       <AnimatePresence>
         {selectedOrder && (
           <div
-            className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4"
+            className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4"
             role="dialog"
             aria-modal="true"
             aria-labelledby="update-status-title"
           >
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="bg-white rounded-3xl p-6 w-full max-w-sm"
+              exit={{ opacity: 0, y: 16 }}
+              className="bg-white rounded-xl border border-gray-200 shadow-xl p-6 w-full max-w-sm"
             >
-              <h3 id="update-status-title" className="font-display text-lg font-bold text-navy-900 mb-1">
+              <h3 id="update-status-title" className="font-body text-lg font-bold text-navy-900 mb-1">
                 {t('updateStatus')}
               </h3>
-              <p className="text-xs font-mono text-navy-400 mb-4">{selectedOrder.orderNumber}</p>
+              <p className="text-xs font-mono text-gray-500 mb-4">{selectedOrder.orderNumber}</p>
 
               <div className="space-y-2 mb-4">
                 {(['CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'COMPLETED', 'CANCELLED'] as OrderStatus[])
@@ -220,13 +222,13 @@ export default function StaffDashboardPage() {
                     <button
                       key={s}
                       onClick={() => setNewStatus(s)}
-                      className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all min-h-[44px] ${
+                      className={`w-full text-left px-3.5 py-2.5 rounded-lg border text-sm font-medium transition-colors min-h-[44px] ${
                         newStatus === s
-                          ? 'border-navy-800 bg-navy-50 text-navy-900'
-                          : 'border-navy-200 text-navy-700 hover:border-navy-400'
+                          ? 'border-navy-900 bg-navy-50 text-navy-900'
+                          : 'border-gray-200 text-navy-900 hover:border-gray-300'
                       }`}
                     >
-                      {ORDER_STATUS_LABELS[s]}
+                      {tStatus.has(s) ? tStatus(s) : ORDER_STATUS_LABELS[s]}
                     </button>
                   ))}
               </div>
@@ -236,7 +238,7 @@ export default function StaffDashboardPage() {
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
                   placeholder={t('cancelReasonRequired')}
-                  className="w-full rounded-xl border-2 border-navy-200 p-3 text-sm text-navy-900 focus:outline-none focus:border-navy-800 resize-none mb-3"
+                  className="w-full rounded-lg border border-gray-300 p-2.5 text-sm text-navy-900 focus:outline-none focus:border-navy-900 resize-none mb-3"
                   rows={2}
                   aria-label={t('cancelReasonRequired')}
                 />
@@ -244,10 +246,10 @@ export default function StaffDashboardPage() {
 
               {newStatus === 'OUT_FOR_DELIVERY' && (
                 <div className="mb-3 space-y-1">
-                  <p className="text-sm text-navy-700">
+                  <p className="text-sm text-navy-900">
                     {t('estimatedLoad', { kg: calculateOrderWeight(selectedOrder.items) })}
                   </p>
-                  <p className="text-xs text-navy-500">
+                  <p className="text-xs text-gray-500">
                     {suggestTruckCapacity(calculateOrderWeight(selectedOrder.items))
                       ? t('suggestedTruck', { truck: suggestTruckCapacity(calculateOrderWeight(selectedOrder.items))!.replace(/_/g, ' ') })
                       : t('aboveCapacity')}
@@ -256,7 +258,7 @@ export default function StaffDashboardPage() {
                     value={truckCapacity || selectedOrder.truckCapacity || suggestTruckCapacity(calculateOrderWeight(selectedOrder.items)) || ''}
                     onChange={(e) => setTruckCapacity(e.target.value)}
                     aria-label={t('chooseTruck')}
-                    className="mt-2 h-10 w-full rounded-lg border border-navy-200 bg-white px-3 text-sm focus:outline-none focus:border-navy-800"
+                    className="mt-2 h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:border-navy-900"
                   >
                     <option value="">{t('chooseTruck')}</option>
                     {(Object.entries(TRUCK_CAPACITY_KG) as [string, number][]).map(([cap, kg]) => (
@@ -276,6 +278,7 @@ export default function StaffDashboardPage() {
                 </Button>
                 <Button
                   className="flex-1"
+                  variant="primary"
                   loading={updating}
                   disabled={
                     !newStatus ||

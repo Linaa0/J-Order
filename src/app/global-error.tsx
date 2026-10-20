@@ -8,45 +8,58 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  const t = useTranslations('errors')
+  const tErrors = useTranslations('errors')
+  const tCommon = useTranslations('common')
 
   return (
     <html lang="en">
       <body
         style={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #060d40 0%, #0d1b5e 50%, #1a2a7c 100%)',
+          backgroundColor: '#f9fafb',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontFamily: 'system-ui, sans-serif',
-          color: 'white',
+          fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
+          color: '#0f172a',
           textAlign: 'center',
-          padding: '1.5rem',
+          padding: '1rem',
+          margin: 0,
         }}
       >
-        <div>
-          <GearLogo dark className="mx-auto mb-6 opacity-90" iconClassName="h-14 w-[4.5rem]" wordmarkClassName="text-3xl" />
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-            {t('generic')}
+        <div
+          style={{
+            maxWidth: '28rem',
+            width: '100%',
+            backgroundColor: '#ffffff',
+            border: '1px solid #e5e7eb',
+            borderRadius: '0.75rem',
+            padding: '2rem',
+            boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+          }}
+        >
+          <GearLogo className="mx-auto mb-6" iconClassName="h-10 w-14" wordmarkClassName="text-2xl" />
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: '#0f172a' }}>
+            {tErrors('generic')}
           </h1>
-          <p style={{ color: '#7881ca', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            {t('errorDescription')}
+          <p style={{ color: '#4b5563', marginBottom: '1.5rem', fontSize: '0.875rem', lineHeight: '1.5' }}>
+            {tErrors('errorDescription')}
           </p>
           <button
             onClick={reset}
             style={{
-              background: '#f59e0b',
+              width: '100%',
+              backgroundColor: '#ea580c',
               color: 'white',
               border: 'none',
-              borderRadius: '0.75rem',
-              padding: '0.75rem 2rem',
-              fontWeight: 600,
-              fontSize: '1rem',
+              borderRadius: '0.5rem',
+              padding: '0.75rem 1.25rem',
+              fontWeight: 500,
+              fontSize: '0.875rem',
               cursor: 'pointer',
             }}
           >
-            {t('retry')}
+            {tCommon('retry')}
           </button>
         </div>
       </body>

@@ -180,11 +180,11 @@ export default function NewOrderPage() {
       </div>
 
       {/* Progress bar */}
-      <div className="flex gap-1" role="progressbar" aria-valuenow={step + 1} aria-valuemax={STEP_LABELS.length}>
+      <div className="flex gap-1.5" role="progressbar" aria-valuenow={step + 1} aria-valuemax={STEP_LABELS.length}>
         {STEP_LABELS.map((_, idx) => (
           <div
             key={idx}
-            className={`h-1 flex-1 rounded-full transition-all duration-300 ${idx <= step ? 'bg-ember-gradient' : 'bg-navy-100'}`}
+            className={`h-1 flex-1 rounded-full transition-all duration-300 ${idx <= step ? 'bg-orange-600' : 'bg-gray-200'}`}
           />
         ))}
       </div>
@@ -192,38 +192,38 @@ export default function NewOrderPage() {
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.18 }}
+          exit={{ opacity: 0, x: -16 }}
+          transition={{ duration: 0.15 }}
         >
           {/* Step 0: Product */}
           {step === 0 && (
             <div className="grid grid-cols-1 gap-3">
               {PRODUCT_IDS.map((pid) => (
-                <motion.button
+                <button
                   key={pid}
-                  whileTap={{ scale: 0.98 }}
+                  type="button"
                   onClick={() => { setFormData({ product: pid }); setErrors({}) }}
-                  className={`flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all min-h-[72px] ${
+                  className={`flex items-center gap-4 p-4 rounded-xl border text-left transition-colors min-h-[72px] ${
                     formData.product === pid
-                      ? 'border-navy-800 bg-navy-50'
-                      : 'border-navy-200 bg-white hover:border-navy-400'
+                      ? 'border-navy-900 bg-navy-50/50 ring-1 ring-navy-900'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
-                    formData.product === pid ? 'text-navy-800' : 'text-navy-500'
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${
+                    formData.product === pid ? 'text-navy-900' : 'text-gray-500'
                   }`}>
                     {getProductIcon(pid, { size: 32 })}
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-navy-900">{tp(pid)}</p>
-                    <p className="text-sm text-navy-400">{tp(`${pid}_DESC` as Parameters<typeof tp>[0])}</p>
+                    <p className="font-semibold text-navy-900 text-sm">{tp(pid)}</p>
+                    <p className="text-xs text-gray-500">{tp(`${pid}_DESC` as Parameters<typeof tp>[0])}</p>
                   </div>
                   {formData.product === pid && (
-                    <CheckCircle2 size={20} className="ml-auto text-navy-800 shrink-0" aria-hidden="true" />
+                    <CheckCircle2 size={18} className="ml-auto text-navy-900 shrink-0" aria-hidden="true" />
                   )}
-                </motion.button>
+                </button>
               ))}
               {errors.product && (
                 <p className="text-sm text-red-600" role="alert">{errors.product}</p>
@@ -235,13 +235,13 @@ export default function NewOrderPage() {
           {step === 1 && (
             <Card>
               <div className="space-y-4">
-                <label className="block text-sm font-medium text-navy-800">{t('howMany')}</label>
-                <div className="flex items-center gap-4">
+                <label className="block text-sm font-medium text-navy-900">{t('howMany')}</label>
+                <div className="flex items-center gap-3">
                   <button
                     type="button"
                     aria-label="Decrease"
                     onClick={() => setFormData({ quantity: Math.max(1, (formData.quantity ?? 1) - 1) })}
-                    className="w-12 h-12 rounded-xl border-2 border-navy-200 flex items-center justify-center text-xl font-bold text-navy-700 hover:border-navy-400 transition-colors"
+                    className="w-11 h-11 rounded-lg border border-gray-300 flex items-center justify-center text-lg font-bold text-navy-900 hover:bg-gray-50 transition-colors"
                   >
                     –
                   </button>
@@ -249,7 +249,7 @@ export default function NewOrderPage() {
                     type="number"
                     value={formData.quantity ?? 1}
                     onChange={(e) => setFormData({ quantity: Math.max(1, parseInt(e.target.value) || 1) })}
-                    className="flex-1 h-12 text-center text-2xl font-bold border-2 border-navy-200 rounded-xl focus:outline-none focus:border-navy-800"
+                    className="flex-1 h-11 text-center text-xl font-bold border border-gray-300 rounded-lg focus:outline-none focus:border-navy-900 focus:ring-1 focus:ring-navy-900"
                     min="1"
                     max="100"
                     aria-label={t('quantity')}
@@ -258,7 +258,7 @@ export default function NewOrderPage() {
                     type="button"
                     aria-label="Increase"
                     onClick={() => setFormData({ quantity: Math.min(100, (formData.quantity ?? 1) + 1) })}
-                    className="w-12 h-12 rounded-xl border-2 border-navy-200 flex items-center justify-center text-xl font-bold text-navy-700 hover:border-navy-400 transition-colors"
+                    className="w-11 h-11 rounded-lg border border-gray-300 flex items-center justify-center text-lg font-bold text-navy-900 hover:bg-gray-50 transition-colors"
                   >
                     +
                   </button>
@@ -273,16 +273,16 @@ export default function NewOrderPage() {
             <Card>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-navy-800 mb-1">
+                  <label className="block text-sm font-medium text-navy-900 mb-1">
                     {t('location')} <span className="text-red-500" aria-hidden="true">*</span>
                   </label>
-                  <p className="text-xs text-navy-400 mb-2">{t('locationHint')}</p>
+                  <p className="text-xs text-gray-500 mb-2">{t('locationHint')}</p>
                   <textarea
                     value={formData.deliveryAddress ?? ''}
                     onChange={(e) => setFormData({ deliveryAddress: e.target.value })}
                     placeholder="e.g. KG 15 Ave, Kacyiru, Kigali"
-                    className={`w-full rounded-xl border-2 p-3 text-navy-900 text-sm focus:outline-none focus:border-navy-800 focus:ring-2 focus:ring-navy-800/20 transition-all resize-none ${
-                      errors.deliveryAddress ? 'border-red-500' : 'border-navy-200'
+                    className={`w-full rounded-lg border p-3 text-navy-900 text-sm focus:outline-none focus:border-navy-900 focus:ring-1 focus:ring-navy-900 transition-colors resize-none ${
+                      errors.deliveryAddress ? 'border-red-500' : 'border-gray-300'
                     }`}
                     rows={3}
                     aria-required="true"
@@ -296,7 +296,7 @@ export default function NewOrderPage() {
                   type="button"
                   onClick={getLocation}
                   disabled={gettingLocation}
-                  className="flex items-center gap-2 text-sm text-navy-700 font-medium hover:text-navy-900 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 text-sm text-navy-900 font-medium hover:text-orange-600 transition-colors disabled:opacity-50 min-h-[44px]"
                 >
                   {gettingLocation
                     ? <Loader2 size={16} className="animate-spin" aria-hidden="true" />
@@ -305,7 +305,7 @@ export default function NewOrderPage() {
                   {gettingLocation ? t('gettingLocation') : t('useMapPin')}
                 </button>
                 {formData.deliveryLat && (
-                  <p className="text-xs text-navy-600">{t('locationCaptured')} ({formData.deliveryLat.toFixed(4)}, {formData.deliveryLng?.toFixed(4)})</p>
+                  <p className="text-xs text-gray-500">{t('locationCaptured')} ({formData.deliveryLat.toFixed(4)}, {formData.deliveryLng?.toFixed(4)})</p>
                 )}
               </div>
             </Card>
@@ -333,12 +333,12 @@ export default function NewOrderPage() {
                   error={errors.preferredTime}
                 />
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-navy-800">{t('notes')}</label>
+                  <label className="text-sm font-medium text-navy-900">{t('notes')}</label>
                   <textarea
                     value={formData.notes ?? ''}
                     onChange={(e) => setFormData({ notes: e.target.value })}
                     placeholder={t('notesPlaceholder')}
-                    className="w-full rounded-xl border-2 border-navy-200 p-3 text-navy-900 text-sm focus:outline-none focus:border-navy-800 resize-none"
+                    className="w-full rounded-lg border border-gray-300 p-3 text-navy-900 text-sm focus:outline-none focus:border-navy-900 focus:ring-1 focus:ring-navy-900 transition-colors resize-none"
                     rows={3}
                   />
                 </div>
@@ -350,30 +350,30 @@ export default function NewOrderPage() {
           {step === 4 && (
             <div className="space-y-4">
               <Card>
-                <h2 className="font-display font-semibold text-navy-800 mb-3">{t('step5')}</h2>
+                <h2 className="font-semibold text-navy-900 mb-3 text-base">{t('step5')}</h2>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-navy-50 rounded-xl">
-                    <div className="text-navy-700 shrink-0">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div className="text-navy-900 shrink-0">
                       {getProductIcon(formData.product!, { size: 32 })}
                     </div>
                     <div>
-                      <p className="font-semibold text-navy-900">
+                      <p className="font-semibold text-navy-900 text-sm">
                         {formData.product ? tp(formData.product as Parameters<typeof tp>[0]) : ''}
                       </p>
-                      <p className="text-sm text-navy-500">{t('quantity')}: {formData.quantity}</p>
+                      <p className="text-xs text-gray-500">{t('quantity')}: {formData.quantity}</p>
                     </div>
                   </div>
-                  <div className="space-y-2 text-sm text-navy-700">
+                  <div className="space-y-2 text-sm text-gray-700">
                     <div className="flex items-start gap-2">
-                      <MapPin size={14} className="text-navy-700 shrink-0 mt-0.5" aria-hidden="true" />
+                      <MapPin size={15} className="text-navy-900 shrink-0 mt-0.5" aria-hidden="true" />
                       <span>{formData.deliveryAddress}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{t('date')}:</span>
+                      <span className="font-medium text-navy-900">{t('date')}:</span>
                       <span>{formData.preferredDate} · {formData.preferredTime}</span>
                     </div>
                     {formData.notes && (
-                      <div className="p-2 bg-navy-50 rounded-lg text-navy-500">{formData.notes}</div>
+                      <div className="p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-600">{formData.notes}</div>
                     )}
                   </div>
                 </div>
@@ -409,14 +409,14 @@ export default function NewOrderPage() {
               )}
 
               {typeof window !== 'undefined' && !navigator.onLine && (
-                <div className="flex items-start gap-2 p-3 bg-navy-50 border border-navy-200 rounded-xl text-sm text-navy-700">
+                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-900">
                   <span>{t('offlineWarning')}</span>
                 </div>
               )}
 
               <Button
                 className="w-full"
-                size="lg"
+                size="md"
                 loading={submitting}
                 onClick={handleSubmit}
                 disabled={isGuest && !guestPhone.trim()}
@@ -431,6 +431,7 @@ export default function NewOrderPage() {
       {step < 4 && (
         <Button
           className="w-full"
+          size="md"
           onClick={() => { if (validateStep()) setStep(step + 1) }}
         >
           {tCommon('confirm')}

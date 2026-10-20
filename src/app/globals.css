@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,9 +7,9 @@
 @layer base {
   :root {
     color-scheme: light;
-    --bg-primary: #f5f7fb;
+    --bg-primary: #f9fafb;
     --bg-surface: #ffffff;
-    --bg-surface-soft: #eef2fa;
+    --bg-surface-soft: #f3f4f6;
     --bg-navy: #0f172a;
     --navy-700: #1d2c5e;
     --navy-800: #14234e;
@@ -20,8 +20,8 @@
     --success: #166534;
     --warning: #a16207;
     --error: #b91c1c;
-    --accent: #f59e0b;
-    --accent-strong: #ea580c;
+    --accent: #ea580c;
+    --accent-strong: #c2410c;
   }
 
   * {
@@ -43,7 +43,7 @@
   h3,
   h4,
   h5 {
-    @apply font-display;
+    @apply font-body;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -57,23 +57,8 @@
 }
 
 @layer utilities {
-  .bg-ember-gradient {
-    background: linear-gradient(135deg, #f8cf72 0%, #f59e0b 28%, #f97316 62%, #ea580c 100%);
-  }
-
-  .bg-navy-gradient {
-    background: linear-gradient(135deg, #0b1025 0%, #101d44 38%, #1b2d67 100%);
-  }
-
   .bg-surface-soft {
     background: var(--bg-surface-soft);
-  }
-
-  .text-ember-gradient {
-    background: linear-gradient(135deg, #f8cf72 0%, #f59e0b 35%, #ea580c 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 }
 

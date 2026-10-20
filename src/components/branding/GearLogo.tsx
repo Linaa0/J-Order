@@ -1,6 +1,5 @@
 'use client'
 
-import { useId } from 'react'
 import { cn } from '@/lib/utils'
 
 interface GearLogoProps {
@@ -58,7 +57,6 @@ export function GearLogo({
   dark = false,
   showWordmark = true,
 }: GearLogoProps) {
-  const id = useId().replace(/:/g, '')
   const primary = dark ? '#f8fafc' : '#0b1b3a'
   const stacked = layout === 'stacked'
 
@@ -79,26 +77,20 @@ export function GearLogo({
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
-        <defs>
-          <linearGradient id={`${id}-ember`} x1="8" y1="7" x2="30" y2="39" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#fbbf24" />
-            <stop offset="1" stopColor="#ea580c" />
-          </linearGradient>
-        </defs>
-        <Gear x={22} y={24} radius={15} teeth={8} color={`url(#${id}-ember)`} animate={animated} duration={16} />
+        <Gear x={22} y={24} radius={15} teeth={8} color="#ea580c" animate={animated} duration={16} />
         <Gear x={44} y={24} radius={11} teeth={8} color={primary} animate={animated} duration={12} reverse />
       </svg>
       {showWordmark && (
         <span
           className={cn(
-            'whitespace-nowrap font-semibold leading-none',
+            'whitespace-nowrap font-bold leading-none tracking-tight',
             dark ? 'text-white' : 'text-navy-900',
             stacked ? 'text-3xl' : 'text-xl',
             wordmarkClassName,
           )}
-          style={{ fontFamily: '"Space Grotesk", "General Sans", sans-serif' }}
+          style={{ fontFamily: '"Inter", sans-serif' }}
         >
-          <span className="text-ember-500">J</span> Order
+          <span className="text-orange-600">J</span> Order
         </span>
       )}
       <style jsx global>{`

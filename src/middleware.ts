@@ -1,10 +1,36 @@
 import { withAuth } from 'next-auth/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
-const protectedPaths = ['/admin', '/staff', '/orders', '/order', '/settings']
-
 const authMiddleware = withAuth(
-  function onSuccess(_req) {
+  function middleware(req) {
+    const token = req.nextauth.token
+    const pathname = req.nextUrl.pathname
+
+    if (token) {
+      if (token.mustChangePassword && pathname !== '/settings') {
+        const url = req.nextUrl.clone()
+        url.pathname = '/settings'
+        return NextResponse.redirect(url)
+      }
+
+      if (pathname.startsWith('/admin') && token.role !== 'ADMIN') {
+        const url = req.nextUrl.clone()
+        url.pathname = token.role === 'ORDER_STAFF' || token.role === 'TECHNICIAN' ? '/staff/dashboard' : '/'
+        return NextResponse.redirect(url)
+      }
+
+      if (
+        pathname.startsWith('/staff') &&
+        token.role !== 'ORDER_STAFF' &&
+        token.role !== 'TECHNICIAN' &&
+        token.role !== 'ADMIN'
+      ) {
+        const url = req.nextUrl.clone()
+        url.pathname = '/'
+        return NextResponse.redirect(url)
+      }
+    }
+
     return NextResponse.next()
   },
   {
@@ -20,11 +46,12 @@ const authMiddleware = withAuth(
 export default function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname
   const isGuestCheckout = pathname === '/order/new' && req.nextUrl.searchParams.get('guest') === '1'
-  const isProtectedPath = protectedPaths.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`)
-  )
+  const isOrdersList = pathname === '/orders'
+  const isOrderNew = pathname === '/order/new' && !isGuestCheckout
+  const isAdminOrStaffOrSettings =
+    pathname.startsWith('/admin') || pathname.startsWith('/staff') || pathname.startsWith('/settings')
 
-  if (isGuestCheckout || !isProtectedPath) {
+  if (!isOrdersList && !isOrderNew && !isAdminOrStaffOrSettings) {
     return NextResponse.next()
   }
 

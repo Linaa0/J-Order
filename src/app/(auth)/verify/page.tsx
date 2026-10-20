@@ -13,7 +13,6 @@ import { toast } from 'sonner'
 export default function VerifyPage() {
   const router = useRouter()
   const t = useTranslations('auth')
-  const tApp = useTranslations('app')
   const [code, setCode] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
@@ -133,30 +132,31 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-navy-gradient flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
         className="w-full max-w-sm"
       >
         <button
           onClick={() => router.push('/login')}
-          className="flex items-center gap-2 text-navy-300 hover:text-white mb-6 transition-colors"
+          className="flex items-center gap-2 text-gray-500 hover:text-navy-900 mb-6 transition-colors min-h-[44px]"
         >
-          <ArrowLeft size={18} />
-          <span>{t('back')}</span>
+          <ArrowLeft size={16} />
+          <span className="text-sm font-medium">{t('back')}</span>
         </button>
 
-        <div className="text-center mb-8">
-          <GearLogo dark className="mx-auto mb-4" iconClassName="h-10 w-14" wordmarkClassName="text-2xl" />
-          <h1 className="font-display text-3xl font-bold text-white mb-2">{t('otpTitle')}</h1>
-          <p className="text-navy-300 text-sm">
+        <div className="text-center mb-6">
+          <GearLogo className="mx-auto mb-3" iconClassName="h-10 w-14" wordmarkClassName="text-2xl" />
+          <h1 className="font-body text-2xl font-bold text-navy-900 mb-1">{t('otpTitle')}</h1>
+          <p className="text-gray-500 text-sm">
             {t('otpSubtitle')}{' '}
-            <span className="text-white font-medium">{contact}</span>
+            <span className="text-navy-900 font-semibold">{contact}</span>
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 shadow-navy">
+        <div className="bg-white rounded-xl p-6 sm:p-8 border border-gray-200 shadow-sm">
           <div className="flex gap-2 justify-center mb-5">
             {code.map((digit, idx) => (
               <input
@@ -169,7 +169,7 @@ export default function VerifyPage() {
                 onChange={(e) => handleChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
                 onPaste={handlePaste}
-                className="h-14 w-11 rounded-xl border-2 text-center text-xl font-bold text-navy-900 focus:outline-none focus:border-ember-700 focus:ring-2 focus:ring-ember-700/20 transition-all border-navy-200"
+                className="h-12 w-11 rounded-lg border border-gray-300 text-center text-lg font-bold text-navy-900 focus:outline-none focus:border-navy-900 focus:ring-1 focus:ring-navy-900 transition-colors"
                 aria-label={`Digit ${idx + 1}`}
               />
             ))}
@@ -181,7 +181,7 @@ export default function VerifyPage() {
 
           <Button
             className="w-full"
-            size="lg"
+            size="md"
             loading={loading}
             onClick={() => {
               const full = code.join('')
@@ -194,24 +194,24 @@ export default function VerifyPage() {
 
           <div className="mt-4 text-center">
             {countdown > 0 ? (
-              <p className="text-sm text-navy-400">
+              <p className="text-sm text-gray-500">
                 {t('resendIn', { seconds: countdown })}
               </p>
             ) : (
               <button
                 onClick={resend}
                 disabled={resending}
-                className="text-sm text-ember-700 font-medium hover:text-ember-800 transition-colors disabled:opacity-50"
+                className="text-sm text-orange-600 font-medium hover:text-orange-700 transition-colors disabled:opacity-50 min-h-[44px]"
               >
                 {resending ? t('resending') : t('resend')}
               </button>
             )}
           </div>
 
-          <div className="mt-4 text-center">
+          <div className="mt-2 text-center">
             <button
               onClick={() => router.push('/login')}
-              className="text-sm text-navy-500 hover:text-navy-700 transition-colors min-h-[44px]"
+              className="text-sm text-gray-500 hover:text-navy-900 transition-colors min-h-[44px]"
             >
               {t('changeContact')}
             </button>

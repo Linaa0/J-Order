@@ -18,27 +18,28 @@ interface OrderCardProps {
 
 export function OrderCard({ order, compact, onClick }: OrderCardProps) {
   const t = useTranslations('order')
+  const tp = useTranslations('products')
   const ta = useTranslations('admin')
   const primaryItem = order.items[0]
-  const label = primaryItem ? PRODUCT_LABELS[primaryItem.product] : 'Order'
+  const label = primaryItem && tp.has(primaryItem.product) ? tp(primaryItem.product as Parameters<typeof tp>[0]) : (primaryItem ? PRODUCT_LABELS[primaryItem.product] : 'Order')
   const extraCount = order.items.length - 1
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
+      transition={{ duration: 0.2 }}
     >
       <Link href={`/orders/${order.id}`} onClick={onClick}>
-        <Card className="hover:shadow-navy transition-shadow cursor-pointer group">
+        <Card className="hover:border-gray-400 transition-colors cursor-pointer group">
           <div className="flex items-start gap-3">
-            <div className="shrink-0 w-12 h-12 rounded-xl bg-navy-50 flex items-center justify-center text-navy-700 group-hover:text-ember-700 transition-colors">
+            <div className="shrink-0 w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-navy-900 group-hover:text-orange-600 transition-colors">
               {primaryItem && getProductIcon(primaryItem.product, { size: 28 })}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1">
                 <div className="min-w-0">
-                  <p className="font-semibold text-navy-900 truncate">
+                  <p className="font-semibold text-navy-900 truncate text-sm sm:text-base">
                     {label}
                     {extraCount > 0 && (
                       <span className="text-navy-400 font-normal"> +{extraCount}</span>

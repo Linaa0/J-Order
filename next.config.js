@@ -22,7 +22,7 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
   },
   experimental: {
-    serverComponentsExternalPackages: ["@prisma/client", "bcryptjs"],
+    serverComponentsExternalPackages: ["@prisma/client", "bcryptjs", "@sentry/nextjs"],
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

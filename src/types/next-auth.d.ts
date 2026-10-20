@@ -9,6 +9,7 @@ declare module 'next-auth' {
       role: string
       preferredLanguage: string
       staffCategories: string[]
+      mustChangePassword?: boolean
     }
   }
 
@@ -17,6 +18,7 @@ declare module 'next-auth' {
     role: string
     preferredLanguage: string
     staffCategories: string[]
+    mustChangePassword?: boolean
   }
 }
 
@@ -27,5 +29,6 @@ declare module 'next-auth/jwt' {
     role: string
     preferredLanguage: string
     staffCategories: string[]
+    mustChangePassword?: boolean
   }
 }

@@ -1,16 +1,20 @@
 import Link from 'next/link'
 import { GearLogo } from '@/components/branding/GearLogo'
 import { Button } from '@/components/ui/Button'
+import { useTranslations } from 'next-intl'
 
 export default function NotFoundPage() {
+  const tAuth = useTranslations('auth')
+  const tErrors = useTranslations('errors')
+
   return (
-    <div className="min-h-screen bg-navy-gradient flex items-center justify-center px-4">
-      <div className="text-center text-white max-w-sm">
-        <GearLogo dark className="mx-auto mb-6 opacity-90" iconClassName="h-14 w-[4.5rem]" wordmarkClassName="text-3xl" />
-        <h1 className="font-display text-5xl font-bold mb-3">404</h1>
-        <p className="text-navy-300 mb-6">The page you are looking for does not exist.</p>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md rounded-xl bg-white p-8 border border-gray-200 shadow-sm text-center">
+        <GearLogo className="mx-auto mb-6" iconClassName="h-10 w-14" wordmarkClassName="text-2xl" />
+        <h1 className="font-body text-4xl font-bold text-navy-900 mb-2">404</h1>
+        <p className="text-gray-600 mb-6 text-sm">{tErrors('notFound')}</p>
         <Link href="/">
-          <Button>Go Home</Button>
+          <Button variant="primary" className="w-full">{tAuth('goHome')}</Button>
         </Link>
       </div>
     </div>

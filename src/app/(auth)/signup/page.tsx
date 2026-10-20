@@ -1,13 +1,11 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { User, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { GearLogo } from '@/components/branding/GearLogo'
-import { resolveAuthContact } from '@/lib/contact'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -18,17 +16,6 @@ export default function SignupPage() {
   const [language, setLanguage] = useState('en')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
-  const stored = typeof window !== 'undefined'
-    ? resolveAuthContact(
-        sessionStorage.getItem('jorder_contact'),
-        sessionStorage.getItem('jorder_contact_type'),
-        sessionStorage.getItem('jorder_phone')
-      )
-    : { contact: '', type: 'phone' as const }
-
-  const contact = stored.contact
-  const contactType = stored.type
 
   const languages = [
     { code: 'en', name: 'English' },
@@ -74,30 +61,30 @@ export default function SignupPage() {
     }
   }
 
-  const inputCls = 'h-12 w-full rounded-xl border-2 border-navy-200 bg-white px-4 text-navy-900 placeholder-navy-300 focus:border-navy-800 focus:outline-none focus:ring-2 focus:ring-navy-800/20 transition-all'
+  const inputCls = 'h-11 w-full rounded-lg border border-gray-300 bg-white px-3.5 text-sm text-navy-900 placeholder-gray-400 focus:border-navy-900 focus:outline-none focus:ring-1 focus:ring-navy-900 transition-colors'
 
   return (
-    <div className="min-h-screen bg-navy-gradient flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.28 }}
+        transition={{ duration: 0.2 }}
         className="w-full max-w-md"
       >
-        <div className="mb-8 text-center">
-          <GearLogo dark layout="stacked" iconClassName="h-14 w-[4.5rem]" wordmarkClassName="text-3xl" className="mx-auto" />
-          <p className="mt-4 text-sm text-navy-300">{t('subtitle')}</p>
+        <div className="mb-6 text-center">
+          <GearLogo layout="stacked" iconClassName="h-12 w-16" wordmarkClassName="text-3xl" className="mx-auto" />
+          <p className="mt-2 text-sm text-gray-500">{t('subtitle')}</p>
         </div>
 
-        <div className="rounded-3xl bg-white p-6 shadow-navy">
-          <h2 className="text-2xl font-bold text-navy-900 mb-2">{t('completeSignup')}</h2>
-          <p className="text-sm text-navy-500 mb-6">{t('signupHint')}</p>
+        <div className="rounded-xl bg-white p-6 sm:p-8 border border-gray-200 shadow-sm">
+          <h2 className="text-xl font-bold text-navy-900 mb-1">{t('completeSignup')}</h2>
+          <p className="text-sm text-gray-500 mb-6">{t('signupHint')}</p>
 
           <form onSubmit={handleSignup} className="space-y-4">
             {/* Name input */}
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400 pointer-events-none">
-                <User size={17} aria-hidden="true" />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <User size={16} aria-hidden="true" />
               </div>
               <input
                 type="text"
@@ -112,8 +99,8 @@ export default function SignupPage() {
 
             {/* Language selector */}
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400 pointer-events-none">
-                <Globe size={17} aria-hidden="true" />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <Globe size={16} aria-hidden="true" />
               </div>
               <select
                 value={language}
@@ -133,13 +120,13 @@ export default function SignupPage() {
               <p className="text-sm text-red-600" role="alert">{error}</p>
             )}
 
-            <Button type="submit" loading={loading} className="w-full" size="lg">
+            <Button type="submit" loading={loading} className="w-full" size="md">
               {t('completeSignupCta')}
             </Button>
           </form>
         </div>
 
-        <p className="mt-6 text-center text-sm text-navy-400">
+        <p className="mt-6 text-center text-sm text-gray-400">
           {tApp('company')} · {tApp('location')}
         </p>
       </motion.div>

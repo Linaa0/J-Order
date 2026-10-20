@@ -10,7 +10,7 @@ function generateLocalId(): string {
 export function useOfflineSync() {
   const syncPendingOrders = useCallback(async () => {
     if (!navigator.onLine) return
-    const pending = await db.offlineOrders.where('synced').equals(0).toArray()
+    const pending = await db.offlineOrders.filter((order) => !order.synced).toArray()
     for (const order of pending) {
       if (order.syncAttempts >= 5) continue
       try {

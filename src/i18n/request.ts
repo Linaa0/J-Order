@@ -18,7 +18,7 @@ function getLocaleFromHeader(acceptLanguage: string | null): Locale {
   return 'en'
 }
 
-export default getRequestConfig(async ({ requestLocale }) => {
+export default getRequestConfig(async ({ requestLocale: _requestLocale }) => {
   const cookieStore = cookies()
   
   // Priority 1: Cookie

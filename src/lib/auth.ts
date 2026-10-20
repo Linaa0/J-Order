@@ -57,6 +57,7 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
             preferredLanguage: user.preferredLanguage,
             staffCategories: user.staffCategories.map((c) => c.category),
+            mustChangePassword: user.mustChangePassword,
           }
         }
 
@@ -110,6 +111,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           preferredLanguage: user.preferredLanguage,
           staffCategories: user.staffCategories.map((c) => c.category),
+          mustChangePassword: user.mustChangePassword,
         }
       },
     }),
@@ -122,6 +124,7 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as { role: string }).role
         token.preferredLanguage = (user as { preferredLanguage: string }).preferredLanguage
         token.staffCategories = (user as { staffCategories: string[] }).staffCategories ?? []
+        token.mustChangePassword = (user as { mustChangePassword?: boolean }).mustChangePassword ?? false
       }
       return token
     },
@@ -132,6 +135,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string
         session.user.preferredLanguage = token.preferredLanguage as string
         session.user.staffCategories = (token.staffCategories as string[]) ?? []
+        session.user.mustChangePassword = (token.mustChangePassword as boolean) ?? false
       }
       return session
     },

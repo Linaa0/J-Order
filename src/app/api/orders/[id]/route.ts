@@ -17,10 +17,6 @@ const statusUpdateSchema = z.object({
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const order = await prisma.order.findUnique({
       where: { id: params.id },
       include: {
@@ -38,6 +34,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    }
+
+    if (!session?.user) {
+      if (order.isGuestOrder) {
+        return NextResponse.json({ data: order })
+      }
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const role = session.user.role

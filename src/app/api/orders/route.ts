@@ -162,10 +162,8 @@ export async function GET(req: NextRequest) {
     if (role === 'CLIENT') {
       where.clientId = session.user.id
     } else if (role === 'ORDER_STAFF') {
-      const categories = session.user.staffCategories
-      if (categories.length > 0) {
-        where.items = { some: { product: { in: categories } } }
-      }
+      const categories = session.user.staffCategories ?? []
+      where.items = { some: { product: { in: categories } } }
     } else if (role === 'TECHNICIAN') {
       where.assignedToId = session.user.id
     }

@@ -24,6 +24,8 @@ export default function OrderDetailPage() {
   const tOrder = useTranslations('order')
   const tCommon = useTranslations('common')
   const tPayment = useTranslations('payment')
+  const tp = useTranslations('products')
+  const tStatus = useTranslations('status')
   const [order, setOrder] = useState<OrderWithDetails | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -37,8 +39,8 @@ export default function OrderDetailPage() {
     return () => controller.abort()
   }, [id])
 
-  if (loading) return <div className="py-16 text-center text-navy-400">{tCommon('loading')}</div>
-  if (!order) return <div className="py-16 text-center text-navy-400">{tOrder('notFound')}</div>
+  if (loading) return <div className="py-16 text-center text-gray-500">{tCommon('loading')}</div>
+  if (!order) return <div className="py-16 text-center text-gray-500">{tOrder('notFound')}</div>
 
   const currentStepIndex = STATUS_STEPS.findIndex((step) => step.key === order.status)
   const progress = Math.max(0, (currentStepIndex + 1) / STATUS_STEPS.length) * 100
@@ -53,7 +55,7 @@ export default function OrderDetailPage() {
             <input
               type="text"
               placeholder={t('orderNumberPlaceholder')}
-              className="flex-1 h-11 px-4 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-navy-500 focus:ring-1 focus:ring-navy-500"
+              className="flex-1 h-11 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-navy-900 focus:ring-1 focus:ring-navy-900"
             />
             <Button className="h-11 px-6">{t('trackButton')}</Button>
           </div>
@@ -80,7 +82,7 @@ export default function OrderDetailPage() {
           <h2 className="text-base font-semibold text-navy-900 mb-4">{t('deliveryProgress')}</h2>
           <div className="relative">
             <div className="h-1 bg-gray-200 rounded-full">
-              <div className="h-1 bg-ember-600 rounded-full transition-all" style={{ width: `${progress}%` }} />
+              <div className="h-1 bg-orange-600 rounded-full transition-all" style={{ width: `${progress}%` }} />
             </div>
             <div className="flex justify-between mt-4">
               {STATUS_STEPS.map((step, index) => {
@@ -90,7 +92,7 @@ export default function OrderDetailPage() {
                   <div key={step.key} className="flex flex-col items-center flex-1">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                        isCompleted ? 'bg-ember-600 text-white' : 'bg-gray-200 text-gray-500'
+                        isCompleted ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-500'
                       }`}
                     >
                       {index + 1}
@@ -115,12 +117,12 @@ export default function OrderDetailPage() {
                 return (
                   <div key={h.id} className="flex gap-3">
                     <div className="flex flex-col items-center">
-                      <div className={`w-3 h-3 rounded-full ${isLatest ? 'bg-ember-600' : 'bg-gray-300'}`} />
+                      <div className={`w-3 h-3 rounded-full ${isLatest ? 'bg-orange-600' : 'bg-gray-300'}`} />
                       {index < order.statusHistory.length - 1 && <div className="w-px h-full bg-gray-200 mt-1" />}
                     </div>
                     <div className="flex-1 pb-4">
                       <p className={`text-sm font-medium ${isLatest ? 'text-navy-900' : 'text-gray-600'}`}>
-                        {ORDER_STATUS_LABELS[h.newStatus] ?? h.newStatus.replace(/_/g, ' ')}
+                        {tStatus.has(h.newStatus) ? tStatus(h.newStatus) : (ORDER_STATUS_LABELS[h.newStatus] ?? h.newStatus)}
                       </p>
                       {h.reason && <p className="text-sm text-gray-500 mt-1">{h.reason}</p>}
                       <p className="text-xs text-gray-400 mt-1">{formatDateTime(h.createdAt)}</p>
@@ -163,7 +165,9 @@ export default function OrderDetailPage() {
             {order.items.map((item) => (
               <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
                 <div>
-                  <p className="text-sm font-medium text-navy-900">{PRODUCT_LABELS[item.product]}</p>
+                  <p className="text-sm font-medium text-navy-900">
+                    {tp.has(item.product) ? tp(item.product as Parameters<typeof tp>[0]) : PRODUCT_LABELS[item.product]}
+                  </p>
                   <p className="text-sm text-gray-500">{tOrder('quantity')}: {item.quantity}</p>
                 </div>
                 <p className="text-sm font-medium text-navy-900">

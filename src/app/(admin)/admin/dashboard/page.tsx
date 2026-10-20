@@ -12,6 +12,7 @@ import { OrderCardSkeleton } from '@/components/ui/Skeleton'
 import { PRODUCT_LABELS } from '@/lib/order-utils'
 import { toast } from 'sonner'
 import { AdminOrdersPanel, ConsolidationPanel } from '@/components/admin/AdminOperations'
+import { DashboardOverview } from '@/components/admin/DashboardOverview'
 
 interface Analytics {
   totalOrders: number
@@ -51,7 +52,7 @@ export default function AdminDashboardPage() {
   const t = useTranslations('admin')
   const tCommon = useTranslations('common')
 
-  const activeTab = searchParams.get('tab') ?? 'orders'
+  const activeTab = searchParams.get('tab') ?? 'overview'
 
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
   const [staff, setStaff] = useState<StaffUser[]>([])
@@ -151,11 +152,12 @@ export default function AdminDashboardPage() {
     } finally { setSaving(false) }
   }
 
-  if (loading && activeTab !== 'orders' && activeTab !== 'consolidation') {
+  if (loading && activeTab !== 'orders' && activeTab !== 'consolidation' && activeTab !== 'overview') {
     return <div className="space-y-4">{[1, 2, 3].map((i) => <OrderCardSkeleton key={i} />)}</div>
   }
 
   const tabs = [
+    { key: 'overview', label: t('overview') },
     { key: 'orders', label: t('orders') },
     { key: 'consolidation', label: t('consolidation') },
     { key: 'trucks', label: t('trucks') },
@@ -166,7 +168,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold text-navy-900">{t('dashboard')}</h1>
+        <h1 className="text-2xl font-bold text-navy-900">{t('dashboard')}</h1>
         <Button variant="ghost" size="icon" onClick={() => void fetchDashboardData()} aria-label={tCommon('refresh')}>
           <RefreshCw size={18} />
         </Button>
@@ -176,8 +178,8 @@ export default function AdminDashboardPage() {
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => router.push(tab.key === 'orders' ? '/admin/dashboard' : `/admin/dashboard?tab=${tab.key}`)}
-            className={`shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+            onClick={() => router.push(tab.key === 'overview' ? '/admin/dashboard' : `/admin/dashboard?tab=${tab.key}`)}
+            className={`shrink-0 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
               activeTab === tab.key
                 ? 'bg-navy-900 text-white'
                 : 'bg-navy-50 text-navy-600 hover:bg-navy-100'
@@ -187,6 +189,14 @@ export default function AdminDashboardPage() {
           </button>
         ))}
       </div>
+
+      {activeTab === 'overview' && (
+        <DashboardOverview
+          onNavigateTab={(tab) =>
+            router.push(tab === 'overview' ? '/admin/dashboard' : `/admin/dashboard?tab=${tab}`)
+          }
+        />
+      )}
 
       {activeTab === 'orders' && <AdminOrdersPanel />}
       {activeTab === 'consolidation' && <ConsolidationPanel />}
@@ -201,7 +211,7 @@ export default function AdminDashboardPage() {
           </div>
           {trucks.length === 0 && (
             <Card>
-              <div className="flex flex-col items-center gap-2 py-8 text-navy-400">
+              <div className="flex flex-col items-center gap-2 py-8 text-gray-400">
                 <Truck size={36} strokeWidth={1.5} />
                 <p className="text-sm">{t('noStaff')}</p>
               </div>
@@ -213,12 +223,12 @@ export default function AdminDashboardPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="font-semibold text-navy-900">{truck.name}</p>
-                    <p className="text-sm text-navy-500 font-mono">{truck.plateNumber}</p>
-                    <p className="text-xs text-navy-400">{truck.capacityKg} kg capacity</p>
+                    <p className="text-sm text-gray-500 font-mono">{truck.plateNumber}</p>
+                    <p className="text-xs text-gray-400">{truck.capacityKg} kg capacity</p>
                     <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      truck.status === 'AVAILABLE' ? 'bg-navy-900 text-white' :
-                      truck.status === 'ON_TRIP' ? 'bg-navy-700 text-white' :
-                      truck.status === 'LOADING' ? 'bg-navy-500 text-white' :
+                      truck.status === 'AVAILABLE' ? 'bg-navy-100 text-navy-800' :
+                      truck.status === 'ON_TRIP' ? 'bg-navy-100 text-navy-800' :
+                      truck.status === 'LOADING' ? 'bg-amber-100 text-amber-800' :
                       'bg-red-50 text-red-700'
                     }`}>{truck.status.replace(/_/g, ' ')}</span>
                   </div>
@@ -249,27 +259,27 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-2 gap-3">
             {[
               { label: t('totalOrders'), value: analytics.totalOrders, icon: Package, color: 'text-navy-700' },
-              { label: t('ordersToday'), value: analytics.ordersToday, icon: TrendingUp, color: 'text-ember-700' },
+              { label: t('ordersToday'), value: analytics.ordersToday, icon: TrendingUp, color: 'text-orange-600' },
               { label: t('completed'), value: analytics.completedOrders, icon: CheckCircle2, color: 'text-navy-900' },
               { label: t('cancelled'), value: analytics.cancelledOrders, icon: XCircle, color: 'text-red-600' },
             ].map((stat) => (
               <motion.div key={stat.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                 <Card>
                   <stat.icon size={20} className={`${stat.color} mb-2`} aria-hidden="true" />
-                  <p className="font-display text-2xl font-bold text-navy-900">{stat.value}</p>
-                  <p className="text-xs text-navy-400 mt-0.5">{stat.label}</p>
+                  <p className="text-2xl font-bold text-navy-900">{stat.value}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
                 </Card>
               </motion.div>
             ))}
           </div>
           <Card>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-display font-semibold text-navy-800">{t('completionRate')}</h2>
-              <span className="font-bold text-2xl text-ember-700">{analytics.completionRate}%</span>
+              <h2 className="font-semibold text-navy-900">{t('completionRate')}</h2>
+              <span className="font-bold text-2xl text-orange-600">{analytics.completionRate}%</span>
             </div>
-            <div className="h-2 bg-navy-100 rounded-full" role="progressbar" aria-valuenow={analytics.completionRate} aria-valuemin={0} aria-valuemax={100}>
+            <div className="h-2 bg-gray-200 rounded-full" role="progressbar" aria-valuenow={analytics.completionRate} aria-valuemin={0} aria-valuemax={100}>
               <motion.div
-                className="h-2 bg-ember-gradient rounded-full"
+                className="h-2 bg-orange-600 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${analytics.completionRate}%` }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -278,13 +288,13 @@ export default function AdminDashboardPage() {
           </Card>
           {analytics.dailyOrders.length > 0 && (
             <Card>
-              <h2 className="font-display font-semibold text-navy-800 mb-4">{t('ordersLast30')}</h2>
+              <h2 className="font-semibold text-navy-900 mb-4">{t('ordersLast30')}</h2>
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={analytics.dailyOrders.map((d) => ({ date: d.date, orders: parseInt(d.count) }))}>
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(v: string) => v.slice(5)} />
                   <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                   <Tooltip
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #c5c9e8', fontSize: 12 }}
+                    contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: 12 }}
                     formatter={(v: number) => [`${v} orders`, '']}
                   />
                   <Bar dataKey="orders" fill="#0d1b5e" radius={[4, 4, 0, 0]} />
@@ -293,7 +303,7 @@ export default function AdminDashboardPage() {
             </Card>
           )}
           <Card>
-            <h2 className="font-display font-semibold text-navy-800 mb-3">{t('topProducts')}</h2>
+            <h2 className="font-semibold text-navy-900 mb-3">{t('topProducts')}</h2>
             <div className="space-y-2">
               {analytics.productCounts.map((pc) => (
                 <div key={pc.product} className="flex items-center justify-between text-sm">
@@ -316,7 +326,7 @@ export default function AdminDashboardPage() {
           </div>
           {staff.length === 0 && (
             <Card>
-              <p className="py-8 text-center text-sm text-navy-400">{t('noStaff')}</p>
+              <p className="py-8 text-center text-sm text-gray-500">{t('noStaff')}</p>
             </Card>
           )}
           <div className="space-y-3">
@@ -325,12 +335,12 @@ export default function AdminDashboardPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="font-semibold text-navy-900">{s.name ?? t('unnamed')}</p>
-                    <p className="text-sm text-navy-500">{s.phone}</p>
-                    <p className="text-xs text-navy-400">{ROLE_LABELS[s.role as keyof typeof ROLE_LABELS] ?? s.role}</p>
+                    <p className="text-sm text-gray-500">{s.phone}</p>
+                    <p className="text-xs text-gray-400">{ROLE_LABELS[s.role as keyof typeof ROLE_LABELS] ?? s.role}</p>
                     {s.staffCategories.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {s.staffCategories.map((c) => (
-                          <span key={c.category} className="text-xs bg-navy-50 text-navy-600 rounded-lg px-2 py-0.5">
+                          <span key={c.category} className="text-xs bg-navy-50 text-navy-700 border border-navy-100 rounded-lg px-2 py-0.5">
                             {PRODUCT_LABELS[c.category as keyof typeof PRODUCT_LABELS]}
                           </span>
                         ))}
@@ -353,22 +363,22 @@ export default function AdminDashboardPage() {
       )}
 
       {showAddStaff && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="add-staff-title">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl p-6 w-full max-w-sm">
-            <h3 id="add-staff-title" className="font-display text-lg font-bold text-navy-900 mb-4">{t('addStaffTitle')}</h3>
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="add-staff-title">
+          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-xl border border-gray-200 shadow-xl p-6 w-full max-w-sm">
+            <h3 id="add-staff-title" className="text-lg font-bold text-navy-900 mb-4">{t('addStaffTitle')}</h3>
             <form onSubmit={handleAddStaff} className="space-y-4">
-              <input type="tel" placeholder={t('staffPhone')} required value={newStaff.phone} onChange={(e) => setNewStaff((p) => ({ ...p, phone: e.target.value }))} className="h-12 w-full rounded-xl border-2 border-navy-200 px-4 text-navy-900 focus:outline-none focus:border-ember-700" />
-              <input type="text" placeholder={t('staffName')} required value={newStaff.name} onChange={(e) => setNewStaff((p) => ({ ...p, name: e.target.value }))} className="h-12 w-full rounded-xl border-2 border-navy-200 px-4 text-navy-900 focus:outline-none focus:border-ember-700" />
-              <select value={newStaff.role} onChange={(e) => setNewStaff((p) => ({ ...p, role: e.target.value }))} className="h-12 w-full rounded-xl border-2 border-navy-200 px-4 text-navy-900 focus:outline-none focus:border-ember-700 bg-white">
+              <input type="tel" placeholder={t('staffPhone')} required value={newStaff.phone} onChange={(e) => setNewStaff((p) => ({ ...p, phone: e.target.value }))} className="h-11 w-full rounded-lg border border-gray-300 px-3 text-sm text-navy-900 focus:outline-none focus:border-navy-900" />
+              <input type="text" placeholder={t('staffName')} required value={newStaff.name} onChange={(e) => setNewStaff((p) => ({ ...p, name: e.target.value }))} className="h-11 w-full rounded-lg border border-gray-300 px-3 text-sm text-navy-900 focus:outline-none focus:border-navy-900" />
+              <select value={newStaff.role} onChange={(e) => setNewStaff((p) => ({ ...p, role: e.target.value }))} className="h-11 w-full rounded-lg border border-gray-300 px-3 text-sm text-navy-900 focus:outline-none focus:border-navy-900 bg-white">
                 <option value="ORDER_STAFF">{t('staffRoleOrderStaff')}</option>
                 <option value="TECHNICIAN">{t('staffRoleTechnician')}</option>
               </select>
               {newStaff.role === 'ORDER_STAFF' && (
                 <div>
-                  <p className="text-sm font-medium text-navy-800 mb-2">{t('assignedProducts')}</p>
+                  <p className="text-xs font-semibold uppercase text-gray-500 mb-2">{t('assignedProducts')}</p>
                   <div className="space-y-1">
                     {ALL_CATEGORIES.map((cat) => (
-                      <label key={cat} className="flex items-center gap-2 text-sm text-navy-700 cursor-pointer min-h-[44px]">
+                      <label key={cat} className="flex items-center gap-2 text-sm text-navy-800 cursor-pointer min-h-[36px]">
                         <input type="checkbox" checked={newStaff.categories.includes(cat)} onChange={(e) => { setNewStaff((p) => ({ ...p, categories: e.target.checked ? [...p.categories, cat] : p.categories.filter((c) => c !== cat) })) }} className="rounded" />
                         {PRODUCT_LABELS[cat as keyof typeof PRODUCT_LABELS]}
                       </label>
@@ -376,7 +386,7 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
               )}
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 pt-2">
                 <Button type="button" variant="outline" className="flex-1" onClick={() => setShowAddStaff(false)}>{tCommon('cancel')}</Button>
                 <Button type="submit" className="flex-1" loading={saving}>{t('addStaff')}</Button>
               </div>
@@ -386,14 +396,14 @@ export default function AdminDashboardPage() {
       )}
 
       {showAddTruck && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="add-truck-title">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl p-6 w-full max-w-sm">
-            <h3 id="add-truck-title" className="font-display text-lg font-bold text-navy-900 mb-4">{t('trucks')}</h3>
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="add-truck-title">
+          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-xl border border-gray-200 shadow-xl p-6 w-full max-w-sm">
+            <h3 id="add-truck-title" className="text-lg font-bold text-navy-900 mb-4">{t('trucks')}</h3>
             <form onSubmit={handleAddTruck} className="space-y-4">
-              <input type="text" placeholder="Plate number e.g. RAB 123 A" required value={newTruck.plateNumber} onChange={(e) => setNewTruck((p) => ({ ...p, plateNumber: e.target.value }))} className="h-12 w-full rounded-xl border-2 border-navy-200 px-4 text-navy-900 focus:outline-none focus:border-ember-700" />
-              <input type="text" placeholder="Truck name" required value={newTruck.name} onChange={(e) => setNewTruck((p) => ({ ...p, name: e.target.value }))} className="h-12 w-full rounded-xl border-2 border-navy-200 px-4 text-navy-900 focus:outline-none focus:border-ember-700" />
-              <input type="number" placeholder="Capacity in kg" required min="100" value={newTruck.capacityKg} onChange={(e) => setNewTruck((p) => ({ ...p, capacityKg: parseInt(e.target.value) || 2000 }))} className="h-12 w-full rounded-xl border-2 border-navy-200 px-4 text-navy-900 focus:outline-none focus:border-ember-700" />
-              <div className="flex gap-3 pt-2">
+              <input type="text" placeholder="Plate number (e.g. RAB 123 A)" required value={newTruck.plateNumber} onChange={(e) => setNewTruck((p) => ({ ...p, plateNumber: e.target.value }))} className="h-11 w-full rounded-lg border border-gray-300 px-3 text-sm text-navy-900 focus:outline-none focus:border-navy-900" />
+              <input type="text" placeholder="Truck name" required value={newTruck.name} onChange={(e) => setNewTruck((p) => ({ ...p, name: e.target.value }))} className="h-11 w-full rounded-lg border border-gray-300 px-3 text-sm text-navy-900 focus:outline-none focus:border-navy-900" />
+              <input type="number" placeholder="Capacity in kg" required min="100" value={newTruck.capacityKg} onChange={(e) => setNewTruck((p) => ({ ...p, capacityKg: parseInt(e.target.value) || 2000 }))} className="h-11 w-full rounded-lg border border-gray-300 px-3 text-sm text-navy-900 focus:outline-none focus:border-navy-900" />
+              <div className="flex gap-2 pt-2">
                 <Button type="button" variant="outline" className="flex-1" onClick={() => setShowAddTruck(false)}>{tCommon('cancel')}</Button>
                 <Button type="submit" className="flex-1" loading={saving}>{tCommon('save')}</Button>
               </div>

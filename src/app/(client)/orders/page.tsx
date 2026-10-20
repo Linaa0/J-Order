@@ -36,7 +36,7 @@ export default function OrdersPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold text-navy-900">{tNav('orders')}</h1>
+        <h1 className="text-2xl font-bold text-navy-900">{tNav('orders')}</h1>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="ghost" onClick={fetchOrders} aria-label={tCommon('refresh')}>
             <RefreshCw size={16} aria-hidden="true" />
@@ -54,15 +54,15 @@ export default function OrdersPage() {
         </div>
       ) : error ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
-          <Package size={48} className="mx-auto text-navy-200 mb-4" aria-hidden="true" />
-          <p className="text-navy-400 mb-6">{tCommon('noResults')}</p>
+          <Package size={48} className="mx-auto text-gray-300 mb-4" aria-hidden="true" />
+          <p className="text-gray-500 mb-6">{tCommon('noResults')}</p>
           <Button variant="outline" onClick={fetchOrders}>{tCommon('retry')}</Button>
         </motion.div>
       ) : orders.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
-          <Package size={48} className="mx-auto text-navy-200 mb-4" aria-hidden="true" />
-          <h2 className="font-display text-xl font-semibold text-navy-700 mb-2">{t('notFound')}</h2>
-          <p className="text-navy-400 mb-6">{t('successMessage')}</p>
+          <Package size={48} className="mx-auto text-gray-300 mb-4" aria-hidden="true" />
+          <h2 className="text-xl font-semibold text-navy-900 mb-2">{t('notFound')}</h2>
+          <p className="text-gray-500 mb-6">{t('successMessage')}</p>
           <Button onClick={() => router.push('/order/new')}>{t('new')}</Button>
         </motion.div>
       ) : (
