@@ -40,5 +40,8 @@ export async function GET(req: NextRequest) {
     }),
     prisma.order.count({ where }),
   ])
-  return NextResponse.json({ data: orders, pagination: { page, limit, total, pages: Math.ceil(total / limit) } })
+  return NextResponse.json(
+    { data: orders, pagination: { page, limit, total, pages: Math.ceil(total / limit) } },
+    { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+  )
 }

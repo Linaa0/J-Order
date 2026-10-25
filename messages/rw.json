@@ -116,7 +116,17 @@
     "noDeliveriesToday": "Nta bitangwa biteganijwe uyu munsi", "noUpcomingDeliveries": "Nta bitangwa bizaza biteganijwe",
     "truckFleet": "Imodoka zose", "noTrucks": "Nta modoka yanditse",
     "truckStatusAvailable": "Irahari", "truckStatusLoading": "Irapakira", "truckStatusOnTrip": "Mu rugendo", "truckStatusMaintenance": "Gukanika",
-    "viewOrder": "Reba iporoso", "overview": "Incamake" },
+    "viewOrder": "Reba iporoso", "overview": "Incamake",
+    "orderDetails": "Ibisobanuro by'iporoso", "rowsPerPage": "Imirongo kuri buri rupapuro", "updateStatus": "Guhindura sitati",
+    "assignStaff": "Gushinga umukozi", "selectStaff": "Hitamo umukozi", "noStaffAssigned": "Nta mukozi wahawe",
+    "statusHistory": "Amateka ya sitati", "noStatusHistory": "Nta mateka ya sitati yanditse",
+    "customerNotes": "Ibyanditswe n'umukiriya", "noNotes": "Nta mabwiriza yihariye yatanzwe",
+    "deliveryLocation": "Aho kuzanirwa", "actions": "Ibikorwa",
+    "addTruck": "Ongeraho imodoka", "truckPlate": "Paki y'imodoka", "truckPlatePlaceholder": "urugero: RAB 123 A",
+    "truckName": "Izina ry'imodoka", "truckNamePlaceholder": "urugero: Imodoka 1",
+    "truckCapacityLabel": "Ubushobozi (kg)", "truckCapacityPlaceholder": "urugero: 2000",
+    "assignedOrdersCount": "Kommande {count} zashinzwe", "ordersCount": "Kommande {count}",
+    "statusActive": "Irakora", "statusInactive": "Ntibikora" },
   "errors": { "generic": "Habaye ikibazo. Ongera ugerageze.", "errorDescription": "Habaye ikibazo kitari imiterere. Itsinda ryacu rarahawe amakuru kandi rizita cyane.", "network": "Nta gutumanaho. Iporoso ryawe ribitswe kandi rizohererezwa.", "notFound": "Ntibiboneka", "unauthorized": "Ntamfite uburenganzira bwo kureba uru rupapuro", "validation": "Reba ibyo wanditse hanyuma ugerageze", "otpExpired": "Kode irangiye. Saba nshya.", "otpInvalid": "Kode ntabwo ari yo. Ongera ugerageze.", "forbidden": "Ntibemewe", "selectAtLeastTwoOrders": "Hitamo amaporoso make abiri", "ordersNoLongerAwaitingConsolidation": "Amaporoso yahiswe atari guhuza", "ordersNeedMapCoordinates": "Buri poroso ukeneye imiterere y'ikarita mbere yo guhuza", "ordersTooFarApart": "Amaporoso yahiswe ari kure cyane", "chooseTruckCapacityError": "Hitamo ubushobozi bw'imodoka", "truckTooSmallForLoad": "Imodoka wahiswe nkeya" },
   "common": { "loading": "Birategerezwa...", "save": "Bika", "cancel": "Hagarika", "delete": "Siba", "edit": "Hindura", "view": "Reba", "close": "Funga", "search": "Shakisha", "noResults": "Nta bisubizo biboneka", "noItems": "Nta bicuruzwa", "today": "Uyu munsi", "yesterday": "Ejo hashize", "all": "Byose", "by": "na", "at": "saa", "retry": "Ongera ugerageze", "refresh": "Vugurura", "back": "Subira", "confirm": "Emeza", "welcome": "Murakaza neza" },
   "offline": { "noConnection": "Nta gutumanaho", "queued": "Iporoso {count} ribitswe", "queuedPlural": "Amaporoso {count} abitswe", "backOnline": "Gutumanaho kugarutse", "syncing": "Kohereza iporoso {count}...", "syncingPlural": "Kohereza amaporoso {count}..." },
@@ -133,6 +143,10 @@
     "passwordError": "Wuzuze uko wese amagambo ijambobanga neza",
     "save": "Bika",
     "passwordChanged": "Ijambobanga ryahinduwe",
-    "saved": "Igenamiterere ribitswe"
+    "saved": "Igenamiterere ribitswe",
+    "accountInfo": "Amakuru ya konti",
+    "security": "Umutekano",
+    "showPassword": "Erekana ijambobanga",
+    "hidePassword": "Hisha ijambobanga"
   }
 }

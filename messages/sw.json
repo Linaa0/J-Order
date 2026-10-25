@@ -116,7 +116,17 @@
     "noDeliveriesToday": "Hakuna uwasilishaji uliopangwa leo", "noUpcomingDeliveries": "Hakuna uwasilishaji ujao uliopangwa",
     "truckFleet": "Kikosi cha malori", "noTrucks": "Hakuna lori lililosajiliwa",
     "truckStatusAvailable": "Inapatikana", "truckStatusLoading": "Inapakia", "truckStatusOnTrip": "Safarini", "truckStatusMaintenance": "Matengenezo",
-    "viewOrder": "Tazama agizo", "overview": "Muhtasari" },
+    "viewOrder": "Tazama agizo", "overview": "Muhtasari",
+    "orderDetails": "Maelezo ya agizo", "rowsPerPage": "Mistari kwa kila ukurasa", "updateStatus": "Sasisha hali",
+    "assignStaff": "Panga mfanyakazi", "selectStaff": "Chagua mfanyakazi", "noStaffAssigned": "Haijapangiwa",
+    "statusHistory": "Historia ya hali", "noStatusHistory": "Hakuna historia ya hali iliyorekodiwa",
+    "customerNotes": "Maelezo ya mteja", "noNotes": "Hakuna maagizo maalum yaliyotolewa",
+    "deliveryLocation": "Mahali pa uwasilishaji", "actions": "Vitendo",
+    "addTruck": "Ongeza lori", "truckPlate": "Nambari ya usajili", "truckPlatePlaceholder": "mfano: RAB 123 A",
+    "truckName": "Jina la lori", "truckNamePlaceholder": "mfano: Lori la utoaji 1",
+    "truckCapacityLabel": "Uwezo (kg)", "truckCapacityPlaceholder": "mfano: 2000",
+    "assignedOrdersCount": "Maagizo {count} yaliyopangiwa", "ordersCount": "Maagizo {count}",
+    "statusActive": "Inafanya kazi", "statusInactive": "Haifanyi kazi" },
   "errors": { "generic": "Kitu kimekwenda vibaya. Jaribu tena.", "errorDescription": "Kuna hitilafu isiyotarajiwa. Timu yetu imetahadharishwa na itaisahihua hivi karibuni.", "network": "Hakuna muunganiko. Agizo lako limehifadhiwa.", "notFound": "Haikupatikana", "unauthorized": "Huna ruhusa ya kuona ukurasa huu", "validation": "Tafadhali angalia maingizo yako na ujaribu tena", "otpExpired": "Nambari imeisha muda wake. Omba mpya.", "otpInvalid": "Nambari si sahihi. Jaribu tena.", "forbidden": "Ufikiaji umekataliwa", "selectAtLeastTwoOrders": "Chagua angalau maagizo mawili", "ordersNoLongerAwaitingConsolidation": "Baadhi ya maagizo yaliyochaguliwa hayako katika hali ya kuchanganywa", "ordersNeedMapCoordinates": "Kila agizo linahitaji ramani ya ramani kabla ya kuchanganywa", "ordersTooFarApart": "Maagizo yaliyochaguliwa yako mbali sana zaidi ya kikwazo cha umbali", "chooseTruckCapacityError": "Chagua uwezo wa lori kwa mzigo huu", "truckTooSmallForLoad": "Lori iliyochaguliwa ni ndogo sana kwa mzigo huu" },
   "common": { "loading": "Inapakia...", "save": "Hifadhi", "cancel": "Ghairi", "delete": "Futa", "edit": "Hariri", "view": "Tazama", "close": "Funga", "search": "Tafuta", "noResults": "Hakuna matokeo", "noItems": "Hakuna bidhaa", "today": "Leo", "yesterday": "Jana", "all": "Yote", "by": "na", "at": "saa", "retry": "Jaribu tena", "refresh": "Onyesha upya", "back": "Rudi", "confirm": "Thibitisha", "welcome": "Karibu" },
   "offline": { "noConnection": "Hakuna muunganiko", "queued": "Agizo {count} limehifadhiwa", "queuedPlural": "Maagizo {count} yamehifadhiwa", "backOnline": "Muunganiko umepatikana", "syncing": "Inasawazisha agizo {count}...", "syncingPlural": "Inasawazisha maagizo {count}..." },
@@ -133,6 +143,10 @@
     "passwordError": "Jaza sehemu zote za nywila kwa usahihi",
     "save": "Hifadhi",
     "passwordChanged": "Nywila imesasishwa",
-    "saved": "Mipangilio imehifadhiwa"
+    "saved": "Mipangilio imehifadhiwa",
+    "accountInfo": "Taarifa za akaunti",
+    "security": "Taarifa ya usalama",
+    "showPassword": "Onyesha nenosiri",
+    "hidePassword": "Ficha nenosiri"
   }
 }

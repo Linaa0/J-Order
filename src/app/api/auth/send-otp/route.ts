@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { randomInt } from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { sanitizePhone } from '@/lib/utils'
 import { detectContactType, normalizeEmail, normalizePhone } from '@/lib/contact'
+import { generateOtp, hashOtp, checkDatabaseRateLimit } from '@/lib/otp'
 
 const schema = z.object({
   contact: z.string().min(4).max(255).optional(),
@@ -12,10 +12,6 @@ const schema = z.object({
   contactType: z.enum(['email', 'phone']).optional(),
   deliveryMethod: z.enum(['sms', 'whatsapp']).optional(),
 })
-
-function generateOtp(): string {
-  return randomInt(100000, 1000000).toString()
-}
 
 async function withDeliveryTimeout<T>(promise: Promise<T>, channel: string): Promise<T> {
   let timeout: ReturnType<typeof setTimeout> | undefined
@@ -202,6 +198,15 @@ async function sendWhatsAppOtp(phone: string, otp: string) {
 export async function POST(req: NextRequest) {
   let pendingOtpId: string | undefined
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || '127.0.0.1'
+    const ipRate = await checkDatabaseRateLimit(`send-otp:ip:${ip}`, 10, 10 * 60 * 1000)
+    if (!ipRate.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests from this network. Please wait a few minutes and try again.' },
+        { status: 429 }
+      )
+    }
+
     const body = await req.json()
     const parsed = schema.safeParse(body)
     if (!parsed.success) {
@@ -216,6 +221,7 @@ export async function POST(req: NextRequest) {
     }
 
     const otp = generateOtp()
+    const hashedOtp = hashOtp(otp)
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
 
     if (type === 'email') {
@@ -245,7 +251,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Please wait a minute before requesting another code.' }, { status: 429 })
       }
 
-      const otpRecord = await prisma.otpCode.create({ data: { userId: user.id, code: otp, expiresAt } })
+      const otpRecord = await prisma.otpCode.create({ data: { userId: user.id, code: hashedOtp, expiresAt } })
       pendingOtpId = otpRecord.id
       await sendEmailOtp(email, otp)
       await prisma.otpCode.updateMany({ where: { userId: user.id, used: false, id: { not: otpRecord.id } }, data: { used: true } })
@@ -260,10 +266,14 @@ export async function POST(req: NextRequest) {
 
     const phone = normalizePhone(preferredContact)
     const safePhone = sanitizePhone(phone)
-    let user = await prisma.user.findUnique({ where: { phone: safePhone } })
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [{ phone: phone }, { phone: safePhone }],
+      },
+    })
     if (!user) {
       user = await prisma.user.create({
-        data: { phone: safePhone, role: 'CLIENT', preferredLanguage: 'en' },
+        data: { phone, role: 'CLIENT', preferredLanguage: 'en' },
       })
     }
 
@@ -284,7 +294,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please wait a minute before requesting another code.' }, { status: 429 })
     }
 
-    const otpRecord = await prisma.otpCode.create({ data: { userId: user.id, code: otp, expiresAt } })
+    const otpRecord = await prisma.otpCode.create({ data: { userId: user.id, code: hashedOtp, expiresAt } })
     pendingOtpId = otpRecord.id
 
     const delivery = parsed.data.deliveryMethod ?? 'sms'

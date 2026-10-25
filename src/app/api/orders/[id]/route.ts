@@ -38,7 +38,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     if (!session?.user) {
       if (order.isGuestOrder) {
-        return NextResponse.json({ data: order })
+        return NextResponse.json({ data: order }, { headers: { 'Cache-Control': 'no-store, max-age=0' } })
       }
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    return NextResponse.json({ data: order })
+    return NextResponse.json({ data: order }, { headers: { 'Cache-Control': 'no-store, max-age=0' } })
   } catch (error) {
     console.error('Get order error:', error)
     return NextResponse.json({ error: 'Failed to fetch order' }, { status: 500 })

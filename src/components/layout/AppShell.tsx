@@ -23,7 +23,7 @@ import {
   Globe,
   LucideIcon,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { GearLogo } from '@/components/branding/GearLogo'
 
@@ -49,10 +49,12 @@ export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const currentLocale = useLocale()
   const t = useTranslations('nav')
+  const tSettings = useTranslations('settings')
   const role = session?.user?.role
 
-  const [language, setLanguage] = useState('en')
+  const [language, setLanguage] = useState(currentLocale)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -425,10 +427,14 @@ export function AppShell({ children }: AppShellProps) {
               </button>
               <div className="min-w-0">
                 <h1 className="text-base sm:text-lg lg:text-xl font-bold text-navy-900 leading-tight truncate">
-                  {t('greeting', { name: firstName || session?.user?.name || 'User' })}
+                  {pathname === '/settings'
+                    ? tSettings('title')
+                    : t('greeting', { name: firstName || session?.user?.name || 'User' })}
                 </h1>
                 <p className="text-xs text-gray-500 hidden sm:block truncate">
-                  {t('greetingSubtitle')}
+                  {pathname === '/settings'
+                    ? tSettings('subtitle')
+                    : t('greetingSubtitle')}
                 </p>
               </div>
             </div>

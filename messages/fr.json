@@ -116,7 +116,17 @@
     "noDeliveriesToday": "Aucune livraison prévue aujourd'hui", "noUpcomingDeliveries": "Aucune livraison à venir programmée",
     "truckFleet": "Flotte de camions", "noTrucks": "Aucun camion enregistré",
     "truckStatusAvailable": "Disponible", "truckStatusLoading": "Chargement", "truckStatusOnTrip": "En voyage", "truckStatusMaintenance": "Maintenance",
-    "viewOrder": "Voir la commande", "overview": "Aperçu" },
+    "viewOrder": "Voir la commande", "overview": "Aperçu",
+    "orderDetails": "Détails de la commande", "rowsPerPage": "Lignes par page", "updateStatus": "Mettre à jour le statut",
+    "assignStaff": "Assigner du personnel", "selectStaff": "Sélectionner un membre du personnel", "noStaffAssigned": "Non assigné",
+    "statusHistory": "Historique des statuts", "noStatusHistory": "Aucun historique de statut enregistré",
+    "customerNotes": "Notes du client", "noNotes": "Aucune consigne particulière fournie",
+    "deliveryLocation": "Lieu de livraison", "actions": "Actions",
+    "addTruck": "Ajouter un camion", "truckPlate": "Numéro d'immatriculation", "truckPlatePlaceholder": "ex. RAB 123 A",
+    "truckName": "Nom du camion", "truckNamePlaceholder": "ex. Camion de livraison 1",
+    "truckCapacityLabel": "Capacité (kg)", "truckCapacityPlaceholder": "ex. 2000",
+    "assignedOrdersCount": "{count} commandes assignées", "ordersCount": "{count} commandes",
+    "statusActive": "Actif", "statusInactive": "Inactif" },
   "errors": { "generic": "Une erreur s'est produite. Veuillez réessayer.", "errorDescription": "Une erreur inattendue s'est produite. Notre équipe a été notifiée et la corrigera bientôt.", "network": "Pas de connexion. Votre commande est sauvegardée.", "notFound": "Non trouvé", "unauthorized": "Vous n'êtes pas autorisé à voir cette page", "validation": "Vérifiez vos entrées et réessayez", "otpExpired": "Code expiré. Veuillez en demander un nouveau.", "otpInvalid": "Code invalide. Veuillez réessayer.", "forbidden": "Accès refusé", "selectAtLeastTwoOrders": "Sélectionnez au moins deux commandes", "ordersNoLongerAwaitingConsolidation": "Certaines commandes sélectionnées ne sont plus en attente de consolidation", "ordersNeedMapCoordinates": "Chaque commande a besoin de coordonnées cartographiques avant de pouvoir être consolidée", "ordersTooFarApart": "Les commandes sélectionnées sont trop éloignées au-delà de la limite de distance", "chooseTruckCapacityError": "Choisissez une capacité de camion pour cette charge", "truckTooSmallForLoad": "Le camion sélectionné est trop petit pour cette charge" },
   "common": { "loading": "Chargement...", "save": "Enregistrer", "cancel": "Annuler", "delete": "Supprimer", "edit": "Modifier", "view": "Voir", "close": "Fermer", "search": "Rechercher", "noResults": "Aucun résultat", "noItems": "Aucun article", "today": "Aujourd'hui", "yesterday": "Hier", "all": "Tous", "by": "par", "at": "à", "retry": "Réessayer", "refresh": "Actualiser", "back": "Retour", "confirm": "Confirmer", "welcome": "Bienvenue" },
   "offline": { "noConnection": "Pas de connexion", "queued": "{count} commande en file d'attente", "queuedPlural": "{count} commandes en file d'attente", "backOnline": "Connexion rétablie", "syncing": "Synchronisation de {count} commande...", "syncingPlural": "Synchronisation de {count} commandes..." },
@@ -133,6 +143,10 @@
     "passwordError": "Veuillez remplir correctement tous les champs de mot de passe",
     "save": "Enregistrer",
     "passwordChanged": "Mot de passe mis à jour",
-    "saved": "Paramètres enregistrés"
+    "saved": "Paramètres enregistrés",
+    "accountInfo": "Informations du compte",
+    "security": "Sécurité",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe"
   }
 }

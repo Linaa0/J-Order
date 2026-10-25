@@ -15,7 +15,10 @@ export async function GET(req: NextRequest) {
     take: 30,
     select: { summaryDate: true, payload: true },
   })
-  return NextResponse.json({ data: { current: summary, history: previous } })
+  return NextResponse.json(
+    { data: { current: summary, history: previous } },
+    { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+  )
 }
 
 export async function PATCH(req: NextRequest) {

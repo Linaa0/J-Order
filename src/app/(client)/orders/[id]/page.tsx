@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { useLivePolling } from '@/hooks/useLivePolling'
 import { MapPin, Calendar, Printer, Phone } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/Button'
@@ -29,17 +30,32 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderWithDetails | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const isTerminal = order ? ['DELIVERED', 'COMPLETED', 'CANCELLED'].includes(order.status) : false
+
+  const fetchOrder = async () => {
+    try {
+      const res = await fetch(`/api/orders/${id}`)
+      if (res.ok) {
+        const d = await res.json()
+        if (d.data) setOrder(d.data)
+      }
+    } catch {
+      // Handled cleanly
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    const controller = new AbortController()
-    fetch(`/api/orders/${id}`, { signal: controller.signal })
-      .then((r) => r.json())
-      .then((d) => setOrder(d.data ?? null))
-      .catch((err) => { if (err.name !== 'AbortError') setOrder(null) })
-      .finally(() => setLoading(false))
-    return () => controller.abort()
+    void fetchOrder()
   }, [id])
 
-  if (loading) return <div className="py-16 text-center text-gray-500">{tCommon('loading')}</div>
+  useLivePolling(fetchOrder, {
+    intervalMs: 15000,
+    enabled: Boolean(order && !isTerminal),
+  })
+
+  if (loading && !order) return <div className="py-16 text-center text-gray-500">{tCommon('loading')}</div>
   if (!order) return <div className="py-16 text-center text-gray-500">{tOrder('notFound')}</div>
 
   const currentStepIndex = STATUS_STEPS.findIndex((step) => step.key === order.status)

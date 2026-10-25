@@ -116,7 +116,17 @@
     "noDeliveriesToday": "No deliveries scheduled for today", "noUpcomingDeliveries": "No upcoming deliveries scheduled",
     "truckFleet": "Truck fleet", "noTrucks": "No trucks registered",
     "truckStatusAvailable": "Available", "truckStatusLoading": "Loading", "truckStatusOnTrip": "On trip", "truckStatusMaintenance": "Maintenance",
-    "viewOrder": "View order", "overview": "Overview" },
+    "viewOrder": "View order", "overview": "Overview",
+    "orderDetails": "Order details", "rowsPerPage": "Rows per page", "updateStatus": "Update status",
+    "assignStaff": "Assign staff", "selectStaff": "Select staff member", "noStaffAssigned": "Unassigned",
+    "statusHistory": "Status history", "noStatusHistory": "No status history recorded",
+    "customerNotes": "Customer notes", "noNotes": "No special instructions provided",
+    "deliveryLocation": "Delivery location", "actions": "Actions",
+    "addTruck": "Add truck", "truckPlate": "Plate number", "truckPlatePlaceholder": "e.g. RAB 123 A",
+    "truckName": "Truck name", "truckNamePlaceholder": "e.g. Delivery Truck 1",
+    "truckCapacityLabel": "Capacity (kg)", "truckCapacityPlaceholder": "e.g. 2000",
+    "assignedOrdersCount": "{count} assigned orders", "ordersCount": "{count} orders",
+    "statusActive": "Active", "statusInactive": "Inactive" },
   "errors": { "generic": "Something went wrong. Please try again.", "errorDescription": "An unexpected error occurred. Our team has been notified and will fix it soon.", "network": "No connection. Your order is saved and will sync automatically.", "notFound": "Not found", "unauthorized": "You are not authorized to view this page", "validation": "Please check your inputs and try again", "otpExpired": "Code expired. Please request a new one.", "otpInvalid": "Invalid code. Please try again.", "forbidden": "Access denied", "selectAtLeastTwoOrders": "Select at least two orders", "ordersNoLongerAwaitingConsolidation": "Some selected orders are no longer awaiting consolidation", "ordersNeedMapCoordinates": "Every order needs map coordinates before it can be consolidated", "ordersTooFarApart": "Selected orders are too far apart beyond the distance limit", "chooseTruckCapacityError": "Choose a truck capacity for this load", "truckTooSmallForLoad": "The selected truck is too small for this load" },
   "common": { "loading": "Loading...", "save": "Save", "cancel": "Cancel", "delete": "Delete", "edit": "Edit", "view": "View", "close": "Close", "search": "Search", "noResults": "No results found", "noItems": "No items", "today": "Today", "yesterday": "Yesterday", "all": "All", "by": "by", "at": "at", "retry": "Try again", "refresh": "Refresh", "back": "Back", "confirm": "Confirm", "welcome": "Welcome" },
   "offline": { "noConnection": "No connection", "queued": "{count} order queued", "queuedPlural": "{count} orders queued", "backOnline": "Back online", "syncing": "Syncing {count} order...", "syncingPlural": "Syncing {count} orders..." },
@@ -133,6 +143,10 @@
     "passwordError": "Please fill all password fields correctly",
     "save": "Save",
     "passwordChanged": "Password updated",
-    "saved": "Settings saved"
+    "saved": "Settings saved",
+    "accountInfo": "Account information",
+    "security": "Security",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   }
 }

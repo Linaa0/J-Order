@@ -58,9 +58,13 @@ export async function POST(req: NextRequest) {
     if (session?.user) {
       clientId = session.user.id
     } else if (data.guestPhone) {
-      const { sanitizePhone } = await import('@/lib/utils')
-      const phone = sanitizePhone(data.guestPhone)
-      let guest = await prisma.user.findUnique({ where: { phone } })
+      const { normalizePhone } = await import('@/lib/contact')
+      const phone = normalizePhone(data.guestPhone)
+      let guest = await prisma.user.findFirst({
+        where: {
+          OR: [{ phone: phone }, { phone: data.guestPhone }],
+        },
+      })
       if (!guest) {
         guest = await prisma.user.create({
           data: { phone, role: UserRole.CLIENT, isGuest: true, preferredLanguage: 'en' },
@@ -158,9 +162,14 @@ export async function GET(req: NextRequest) {
 
     const role = session.user.role
     const where: Record<string, unknown> = {}
+    const andConditions: Record<string, unknown>[] = []
 
     if (role === 'CLIENT') {
-      where.clientId = session.user.id
+      const clientOr: Record<string, unknown>[] = [{ clientId: session.user.id }]
+      if (session.user.phone) {
+        clientOr.push({ guestPhone: session.user.phone })
+      }
+      andConditions.push({ OR: clientOr })
     } else if (role === 'ORDER_STAFF') {
       const categories = session.user.staffCategories ?? []
       where.items = { some: { product: { in: categories } } }
@@ -171,11 +180,18 @@ export async function GET(req: NextRequest) {
     if (status) where.status = status
     if (paymentStatus) where.paymentStatus = paymentStatus
     if (product) where.items = { some: { product } }
-    if (search) where.OR = [
-      { orderNumber: { contains: search, mode: 'insensitive' } },
-      { purchaseCode: { contains: search, mode: 'insensitive' } },
-      { client: { name: { contains: search, mode: 'insensitive' } } },
-    ]
+    if (search) {
+      andConditions.push({
+        OR: [
+          { orderNumber: { contains: search, mode: 'insensitive' } },
+          { purchaseCode: { contains: search, mode: 'insensitive' } },
+          { client: { name: { contains: search, mode: 'insensitive' } } },
+        ],
+      })
+    }
+    if (andConditions.length > 0) {
+      where.AND = andConditions
+    }
     if (from || to) where.createdAt = {
       ...(from ? { gte: new Date(from) } : {}),
       ...(to ? { lte: new Date(`${to}T23:59:59.999`) } : {}),

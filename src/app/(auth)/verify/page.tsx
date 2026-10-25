@@ -17,7 +17,7 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
   const [error, setError] = useState('')
-  const [countdown, setCountdown] = useState(60)
+  const [countdown, setCountdown] = useState(30)
   const inputs = useRef<(HTMLInputElement | null)[]>([])
   const stored = typeof window !== 'undefined'
     ? resolveAuthContact(
@@ -122,7 +122,7 @@ export default function VerifyPage() {
         return
       }
 
-      setCountdown(60)
+      setCountdown(30)
       toast.success(t('codeSentVia', { channel: data.channel || t('viaSms') }))
     } catch {
       setError(t('errorGeneric'))

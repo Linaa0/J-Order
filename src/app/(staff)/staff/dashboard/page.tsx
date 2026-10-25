@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -11,11 +11,12 @@ import { StatusBadge } from '@/components/ui/Badge'
 import { OrderCardSkeleton } from '@/components/ui/Skeleton'
 import { getProductIcon } from '@/components/icons/ProductIcons'
 import { PRODUCT_LABELS, ORDER_STATUS_LABELS, canTransitionTo } from '@/lib/order-utils'
-import { formatDate } from '@/lib/utils'
+import { formatDate, cn } from '@/lib/utils'
 import { calculateOrderWeight, suggestTruckCapacity, TRUCK_CAPACITY_KG } from '@/lib/order-operations'
 import type { OrderWithDetails } from '@/types'
 import { OrderStatus } from '@prisma/client'
 import { toast } from 'sonner'
+import { useLivePolling } from '@/hooks/useLivePolling'
 
 const STATUS_OPTIONS: OrderStatus[] = [
   OrderStatus.PENDING,
@@ -46,19 +47,41 @@ export default function StaffDashboardPage() {
   const [cancelReason, setCancelReason] = useState('')
   const [truckCapacity, setTruckCapacity] = useState('')
 
+  const knownOrderIdsRef = useRef<Set<string> | null>(null)
+  const [newlyAddedIds, setNewlyAddedIds] = useState<Set<string>>(new Set())
+
   const fetchOrders = useCallback(async () => {
-    setLoading(true)
     try {
       const params = new URLSearchParams()
       if (statusFilter) params.set('status', statusFilter)
       if (productFilter) params.set('product', productFilter)
       const res = await fetch(`/api/orders?${params}`)
       const data = await res.json()
-      setOrders(data.data ?? [])
+      const incoming: OrderWithDetails[] = data.data ?? []
+
+      if (knownOrderIdsRef.current !== null) {
+        const fresh = incoming.filter((o) => !knownOrderIdsRef.current?.has(o.id))
+        if (fresh.length > 0) {
+          fresh.forEach((o) => {
+            toast.info(`New order ${o.orderNumber}`)
+          })
+          const freshIds = new Set(fresh.map((o) => o.id))
+          setNewlyAddedIds(freshIds)
+          setTimeout(() => {
+            setNewlyAddedIds(new Set())
+          }, 4000)
+        }
+      }
+      knownOrderIdsRef.current = new Set(incoming.map((o) => o.id))
+      setOrders(incoming)
     } finally {
       setLoading(false)
     }
   }, [statusFilter, productFilter])
+
+  const { secondsAgo, refresh, isRefreshing } = useLivePolling(fetchOrders, {
+    intervalMs: 10000,
+  })
 
   useEffect(() => {
     if (status === 'loading') return
@@ -71,8 +94,6 @@ export default function StaffDashboardPage() {
       return
     }
     void fetchOrders()
-    const interval = setInterval(() => void fetchOrders(), 30_000)
-    return () => clearInterval(interval)
   }, [status, session, fetchOrders, router])
 
   async function updateOrderStatus() {
@@ -117,9 +138,26 @@ export default function StaffDashboardPage() {
               : t('allCaughtUp')}
           </p>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => void fetchOrders()} aria-label={tCommon('refresh')}>
-          <RefreshCw size={18} aria-hidden="true" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span>Live</span>
+            <span className="text-emerald-400">·</span>
+            <span className="text-gray-500">Updated {secondsAgo}s ago</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => void refresh()}
+            disabled={isRefreshing}
+            aria-label={tCommon('refresh')}
+          >
+            <RefreshCw size={18} className={isRefreshing ? 'animate-spin' : ''} aria-hidden="true" />
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -161,7 +199,10 @@ export default function StaffDashboardPage() {
           {orders.map((order) => (
             <motion.div key={order.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
               <Card
-                className="cursor-pointer hover:border-gray-400 transition-colors"
+                className={cn(
+                  'cursor-pointer hover:border-gray-400 transition-colors',
+                  newlyAddedIds.has(order.id) && 'ring-2 ring-orange-500 bg-orange-50/50'
+                )}
                 onClick={() => { setSelectedOrder(order); setNewStatus('') }}
                 role="button"
                 aria-label={`Order ${order.orderNumber}`}

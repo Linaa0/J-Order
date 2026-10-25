@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { detectContactType, normalizeEmail, normalizePhone } from '@/lib/contact'
+import { verifyOtpHash } from '@/lib/otp'
 
 const loginSchema = z.object({
   contact: z.string().min(4).max(255),
@@ -49,6 +50,19 @@ export const authOptions: NextAuthOptions = {
           const passwordMatches = await bcrypt.compare(password, user.passwordHash)
           if (!passwordMatches) return null
 
+          if (user.phone) {
+            await prisma.order.updateMany({
+              where: {
+                guestPhone: user.phone,
+                clientId: { not: user.id },
+              },
+              data: {
+                clientId: user.id,
+                isGuestOrder: false,
+              },
+            }).catch(() => {})
+          }
+
           return {
             id: user.id,
             phone: user.phone ?? '',
@@ -63,10 +77,9 @@ export const authOptions: NextAuthOptions = {
 
         if (!otp) return null
 
-        const otpRecord = await prisma.otpCode.findFirst({
+        const activeOtp = await prisma.otpCode.findFirst({
           where: {
             userId: user.id,
-            code: otp,
             used: false,
             attemptCount: { lt: 5 },
             expiresAt: { gt: new Date() },
@@ -74,34 +87,39 @@ export const authOptions: NextAuthOptions = {
           orderBy: { createdAt: 'desc' },
         })
 
-        if (!otpRecord) {
-          const activeOtp = await prisma.otpCode.findFirst({
-            where: {
-              userId: user.id,
-              used: false,
-              attemptCount: { lt: 5 },
-              expiresAt: { gt: new Date() },
-            },
-            orderBy: { createdAt: 'desc' },
-          })
+        if (!activeOtp) return null
 
-          if (activeOtp) {
-            await prisma.otpCode.update({
-              where: { id: activeOtp.id },
-              data: {
-                attemptCount: { increment: 1 },
-                ...(activeOtp.attemptCount >= 4 ? { used: true } : {}),
-              },
-            })
-          }
+        const isValid = verifyOtpHash(activeOtp.code, otp)
+        if (!isValid) {
+          const nextAttempts = activeOtp.attemptCount + 1
+          await prisma.otpCode.update({
+            where: { id: activeOtp.id },
+            data: {
+              attemptCount: nextAttempts,
+              ...(nextAttempts >= 5 ? { used: true } : {}),
+            },
+          })
           return null
         }
 
         const consumed = await prisma.otpCode.updateMany({
-          where: { id: otpRecord.id, used: false, attemptCount: { lt: 5 }, expiresAt: { gt: new Date() } },
+          where: { id: activeOtp.id, used: false, attemptCount: { lt: 5 }, expiresAt: { gt: new Date() } },
           data: { used: true },
         })
         if (consumed.count !== 1) return null
+
+        if (user.phone) {
+          await prisma.order.updateMany({
+            where: {
+              guestPhone: user.phone,
+              clientId: { not: user.id },
+            },
+            data: {
+              clientId: user.id,
+              isGuestOrder: false,
+            },
+          }).catch(() => {})
+        }
 
         return {
           id: user.id,

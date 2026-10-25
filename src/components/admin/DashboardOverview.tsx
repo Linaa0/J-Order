@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useState, useRef, useMemo } from 'react'
-import Link from 'next/link'
 import {
   Package,
   Clock,
@@ -13,12 +12,14 @@ import {
   MapPin,
   Calendar,
   X,
-  AlertCircle,
   CheckCircle2,
+  RefreshCw,
 } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'
+import { useLivePolling } from '@/hooks/useLivePolling'
+import { toast } from 'sonner'
 
 interface OrderItem {
   id: string
@@ -161,8 +162,10 @@ export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
     }
   }, [filterPopoverOpen])
 
+  const knownOrderIdsRef = useRef<Set<string> | null>(null)
+  const [newlyAddedIds, setNewlyAddedIds] = useState<Set<string>>(new Set())
+
   const fetchOverviewData = useCallback(async () => {
-    setLoading(true)
     try {
       const [summariesRes, ordersRes, trucksRes] = await Promise.all([
         fetch('/api/admin/summaries'),
@@ -182,7 +185,22 @@ export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
       }
 
       if (ordersData.data) {
-        setAllOrders(ordersData.data)
+        const incomingOrders: OrderData[] = ordersData.data
+        if (knownOrderIdsRef.current !== null) {
+          const fresh = incomingOrders.filter((o) => !knownOrderIdsRef.current?.has(o.id))
+          if (fresh.length > 0) {
+            fresh.forEach((o) => {
+              toast.info(`New order ${o.orderNumber}`)
+            })
+            const freshIds = new Set(fresh.map((o) => o.id))
+            setNewlyAddedIds(freshIds)
+            setTimeout(() => {
+              setNewlyAddedIds(new Set())
+            }, 4000)
+          }
+        }
+        knownOrderIdsRef.current = new Set(incomingOrders.map((o) => o.id))
+        setAllOrders(incomingOrders)
       }
 
       if (trucksData.data) {
@@ -194,6 +212,10 @@ export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
       setLoading(false)
     }
   }, [])
+
+  const { secondsAgo, refresh, isRefreshing } = useLivePolling(fetchOverviewData, {
+    intervalMs: 10000,
+  })
 
   useEffect(() => {
     void fetchOverviewData()
@@ -329,6 +351,29 @@ export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
 
   return (
     <div className="space-y-6">
+      {/* Live Polling Status Header */}
+      <div className="flex items-center justify-between pb-1">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wide">Live</span>
+          <span className="text-xs text-gray-400">·</span>
+          <span className="text-xs text-gray-500">Updated {secondsAgo}s ago</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => void refresh()}
+          disabled={isRefreshing}
+          aria-label="Refresh dashboard data"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-navy-900 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw size={12} className={cn(isRefreshing && 'animate-spin')} />
+          <span>{tCommon('refresh')}</span>
+        </button>
+      </div>
+
       {/* 1. ROW OF 4 KPI CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* KPI 1: Orders Today */}
@@ -628,7 +673,10 @@ export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
                       <tr
                         key={order.id}
                         onClick={() => onNavigateTab(`orders&orderId=${order.id}`)}
-                        className="hover:bg-gray-50/80 transition-colors cursor-pointer"
+                        className={cn(
+                          'hover:bg-gray-50/80 transition-colors cursor-pointer',
+                          newlyAddedIds.has(order.id) && 'bg-orange-50/80 border-l-2 border-orange-500'
+                        )}
                       >
                         <td className="py-3.5 px-4 font-semibold text-navy-900 whitespace-nowrap">
                           {order.orderNumber}

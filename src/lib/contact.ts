@@ -13,15 +13,23 @@ export function normalizePhone(value: string): string {
   const digits = value.replace(/\D/g, '')
   if (!digits) return ''
 
-  if (digits.startsWith('250')) {
+  // 12 digits: e.g. 250788123456
+  if (digits.startsWith('250') && digits.length === 12) {
     return `+${digits}`
   }
 
-  if (digits.startsWith('0')) {
+  // 10 digits starting with 0: e.g. 0788123456 -> +250788123456
+  if (digits.startsWith('0') && digits.length === 10) {
     return `+250${digits.slice(1)}`
   }
 
-  if (digits.length >= 9) {
+  // 9 digits starting with 7: e.g. 788123456 -> +250788123456
+  if (digits.length === 9 && (digits.startsWith('7') || digits.startsWith('8'))) {
+    return `+250${digits}`
+  }
+
+  // Fallback: if already starts with 250
+  if (digits.startsWith('250')) {
     return `+${digits}`
   }
 
